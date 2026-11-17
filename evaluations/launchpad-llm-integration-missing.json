@@ -1,0 +1,26 @@
+{
+  "name": "Launch Pad prompt needs an LLM integration the coding-agent application can't see",
+  "skills": [
+    "conductor"
+  ],
+  "query": "/conductor connect to https://acme.orkesconductor.com and build a workflow that summarizes a support ticket with Claude. (Context: `conductor login` already saved profile `acme` for the coding-agent application; `integration-list --category AI_MODEL` returns [].)",
+  "expected_behavior": [
+    "Step 1: Use profile `acme` (whoami works); recognize Orkes, where LLM providers are integrations (Rule 16)",
+    "Step 2: `python3 \"$CONDUCTOR_API\" --profile acme integration-list --category AI_MODEL` → nothing usable; note the list only shows integrations shared with coding-agent",
+    "Step 3: Provider is Anthropic (from 'Claude'); pick a current model id from Anthropic's models page (WebSearch/WebFetch), e.g. claude-sonnet-4-6 — not from memory",
+    "Step 4: Do NOT run integration-save (coding-agent can't create integrations) and do NOT ask for the Anthropic key or tell the user to export it",
+    "Step 5: Open the add-integration page: `URL=$(python3 \"$CONDUCTOR_API\" --profile acme integration-add-url --type anthropic)` then `open \"$URL\"` → https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic",
+    "Step 6: Tell the user in plain words: add your Anthropic key in that tab, add the model <id>, share the integration with the coding-agent application (Access Control → Applications → coding-agent → Integration tab), and say done",
+    "Step 7: `integration-wait --type anthropic --model <id>`; on exit 3 explain what's missing and rerun when the user says done",
+    "Step 8: With the returned `llmProvider` name, save a prompt template (Rule 18), write the LLM_CHAT_COMPLETE workflow to a file, register it and run a verification execution"
+  ],
+  "success_criteria": [
+    "Checks integration-list (and model-list if something is visible) before acting",
+    "Does not call integration-save / model-sync for the coding-agent profile and never asks for, or asks the user to export, the Anthropic key",
+    "Opens (or prints) the add-integration URL built from the profile's server — https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic — not localhost and not a guessed route",
+    "Tells the user to add the key, add the specific model, and share the integration with coding-agent via Access Control → Applications → coding-agent → Integration tab",
+    "Polls with integration-wait (or repeated integration-list/model-list) and accepts 'done' to check again",
+    "Continues the original task afterwards using the integration NAME returned, not the type 'anthropic'",
+    "Does not fall back to an HTTP task calling api.anthropic.com"
+  ]
+}

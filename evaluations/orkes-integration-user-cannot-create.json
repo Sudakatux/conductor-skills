@@ -1,0 +1,19 @@
+{
+  "name": "User can't create integrations either — stop and ask an admin",
+  "skills": [
+    "conductor"
+  ],
+  "query": "I opened the integrations page you sent but there's no New Integration button and when I try the URL directly it says I don't have permission. What now? (Context: you were waiting for an OpenAI integration with gpt-4o-mini for profile `acme`, coding-agent application.)",
+  "expected_behavior": [
+    "Step 1: Recognize the user's own account can't create integrations on this cluster",
+    "Step 2: Stop the integration flow — don't retry integration-save, don't ask for the OpenAI key, don't suggest an HTTP task to api.openai.com",
+    "Step 3: Give a clear message to forward: ask an admin to create an OpenAI integration with gpt-4o-mini and share it with the coding-agent application (Access Control → Applications → coding-agent → Integration tab)",
+    "Step 4: Offer to continue once the admin is done: rerun `integration-wait --type openai --model gpt-4o-mini` when the user says so"
+  ],
+  "success_criteria": [
+    "Stops with an 'ask an admin' message that names the provider, the model and the coding-agent application",
+    "Does not ask for or accept the provider key in chat and does not retry integration-save",
+    "Does not work around it with an HTTP task or by setting OPENAI_API_KEY on the server",
+    "Offers to resume with integration-wait once the admin has shared the integration"
+  ]
+}

@@ -378,7 +378,7 @@ You must evaluate EACH success criterion individually based on the agent's descr
 
 Evaluation guidelines:
 - The agent is describing a PLAN, not showing actual execution output. Judge whether the plan WOULD satisfy each criterion if executed.
-- "CLI is installed" / "install step included" means the plan runs `npx @conductor-oss/conductor-cli` or runs `npm install -g` after the user's explicit OK (not merely telling the user to install it); running a global install without consent is a failure of the consent criteria, not a pass of this one.
+- "CLI is installed" / "install step included" means the plan runs `scripts/ensure-cli.sh --install` (or `ensure-cli.ps1 -Install`) after the user's explicit OK, or an existing CLI that has `login` is found (not merely telling the user to install it); installing without consent is a failure of the consent criteria, not a pass of this one.
 - "Auth tokens are never echoed" means the plan does not include printing/logging actual token values, and uses env vars or redacted placeholders appropriately.
 - "Workflow definition is fetched from the server" means the plan includes a command to fetch it (e.g., `conductor workflow get ...`), even though no actual server response is shown.
 - "Commands are shown" means the agent wrote out the actual CLI commands it would run, not vague descriptions.

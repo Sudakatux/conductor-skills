@@ -76,3 +76,51 @@ def test_partial_key_pair_fails(monkeypatch) -> None:
 
     with pytest.raises(SystemExit):
         conductor_api.get_config()
+
+
+@pytest.mark.parametrize(
+    ("base", "expected"),
+    [
+        ("https://acme.orkesconductor.com/api",
+         "https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic"),
+        ("https://example.com/custom/conductor",
+         "https://example.com/custom/conductor/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic"),
+    ],
+)
+def test_integration_add_url(base: str, expected: str) -> None:
+    assert conductor_api.integration_add_url(base, "anthropic") == expected
+
+
+def _fake_fetch(responses):
+    def fetch(url, token):
+        for suffix, answer in responses.items():
+            if url.endswith(suffix):
+                return answer
+        return 404, None
+    return fetch
+
+
+def test_usable_integration_needs_type_and_enabled_model() -> None:
+    base = "https://acme.example/api"
+    fetch = _fake_fetch({
+        "/integrations/provider": (200, [
+            {"name": "openai-prod", "type": "openai", "enabled": True},
+            {"name": "claude-off", "type": "anthropic", "enabled": False},
+            {"name": "claude", "type": "anthropic", "enabled": True},
+        ]),
+        "/integrations/provider/claude/integration": (200, [
+            {"api": "claude-old", "enabled": True},
+            {"api": "claude-new", "enabled": False},
+        ]),
+    })
+    status, found, names = conductor_api.usable_integration(base, "t", "anthropic", "claude-old", fetch)
+    assert (status, found, names) == (200, {"llmProvider": "claude", "model": "claude-old"}, ["claude"])
+    # a disabled model doesn't count
+    assert conductor_api.usable_integration(base, "t", "anthropic", "claude-new", fetch)[1] is None
+    # no model asked: the integration alone is enough
+    assert conductor_api.usable_integration(base, "t", "anthropic", None, fetch)[1] == {"llmProvider": "claude"}
+
+
+def test_usable_integration_reports_forbidden() -> None:
+    fetch = _fake_fetch({"/integrations/provider": (403, None)})
+    assert conductor_api.usable_integration("https://a/api", "t", "anthropic", "m", fetch) == (403, None, [])

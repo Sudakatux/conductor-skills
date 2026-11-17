@@ -6,10 +6,11 @@
   "query": "Set up AWS Bedrock (Anthropic models) as an AI integration on our Orkes cluster in us-east-1 so our workflows can use Claude through Bedrock. We use an IAM role: the role ARN and external ID are in BEDROCK_ROLE_ARN and BEDROCK_EXTERNAL_ID. Add whatever Claude models Bedrock currently offers.",
   "expected_behavior": [
     "Step 1: Check existing AI integrations first (`integration-list --category AI_MODEL`)",
-    "Step 2: Confirm, then create the integration with type `aws_bedrock_anthropic`, `--config connectionType=EXTERNAL_ROLE --config region=us-east-1`, and the role values from the env vars (`--config-env roleArn=BEDROCK_ROLE_ARN --config-env externalId=BEDROCK_EXTERNAL_ID`) \u2014 values never typed into chat or argv",
+    "Step 2: Confirm, then create the integration with type `aws_bedrock_anthropic`, `--config connectionType=EXTERNAL_ROLE --config region=us-east-1`, and the role values from the env vars (`--config-env roleArn=BEDROCK_ROLE_ARN --config-env externalId=BEDROCK_EXTERNAL_ID`) — values never typed into chat or argv",
     "Step 3: Recognize Bedrock has no model-list API usable with this script (`model-sync` does not cover it), so look the current Anthropic-on-Bedrock model ids up online with WebSearch / WebFetch of the official Bedrock supported-models page",
     "Step 4: Show the list, then `model-save --provider <name> --model <bedrock model id>` for each; note the models must also be enabled for the account in that region",
-    "Step 5: Use the integration name as `llmProvider` with one of the registered ids, and verify with a test run"
+    "Step 5: Use the integration name as `llmProvider` with one of the registered ids, and verify with a test run",
+    "Step 6: If `integration-save` returns 403 (this identity can't create integrations), switch to the browser route: open the server's add-integration page in the user's browser (`integration-add-url --type aws_bedrock_anthropic`, built from the profile's server URL, not localhost), tell the user to add their Bedrock (IAM role) key there, add the model <model id> and share the integration with the application (Access Control → Applications → <app> → Integration tab), then poll with `integration-wait --type aws_bedrock_anthropic --model <model id>` (rerun when the user says done); the role ARN and external ID are entered in the UI, never in chat"
   ],
   "success_criteria": [
     "Checks existing AI integrations before creating one",
@@ -17,6 +18,7 @@
     "Uses a live lookup (WebSearch and/or WebFetch of AWS's Bedrock model documentation) to find the current Claude model ids instead of relying only on memory",
     "Registers each found model with `model-save` (or the equivalent REST call), not `model-sync` against a provider list API that Bedrock doesn't offer",
     "Notes that the models must be enabled (model access) in the AWS account and region",
-    "Uses the integration name as `llmProvider` in any workflow example and does not fall back to an HTTP task to bedrock-runtime"
+    "Uses the integration name as `llmProvider` in any workflow example and does not fall back to an HTTP task to bedrock-runtime",
+    "On a 403 from `integration-save`, falls back to opening the add-integration page (`integration-add-url --type aws_bedrock_anthropic`) and `integration-wait` instead of retrying or asking for values in chat"
   ]
 }

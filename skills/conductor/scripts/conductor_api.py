@@ -650,6 +650,83 @@ def handle_model_list(args):
     output(redact(request_json(url, token)))
 
 
+def ui_root(base):
+    """The UI root for an API base: https://acme.example/api -> https://acme.example."""
+    return base[:-len("/api")] if base.endswith("/api") else base
+
+
+def integration_add_url(base, itype, search=None):
+    """The UI page where a signed-in user adds an integration of this type."""
+    params = {"search": search or itype[:3], "view": "connections-and-resources", "type": itype}
+    return f"{ui_root(base)}/integrations/addIntegration?{urllib.parse.urlencode(params)}"
+
+
+def handle_integration_add_url(args):
+    require_enterprise()
+    print(integration_add_url(get_base_url(), args.type, args.search))
+
+
+def try_json(url, token):
+    """GET without exiting: (status, data). While polling, 403/404 are answers, not errors."""
+    headers = {"Accept": "application/json"}
+    if token:
+        headers["X-Authorization"] = token
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30) as resp:
+            raw = resp.read().decode()
+            return resp.status, (json.loads(raw) if raw else None)
+    except urllib.error.HTTPError as e:
+        return e.code, None
+    except urllib.error.URLError:
+        return 0, None
+
+
+def usable_integration(base, token, itype, model=None, fetch=try_json):
+    """(status, found, names): an enabled integration of itype this identity can see, holding
+    an enabled model (when given). names lists every visible integration of that type."""
+    status, providers = fetch(build_url(base, "/integrations/provider"), token)
+    if status != 200:
+        return status, None, []
+    candidates = [p for p in providers or [] if p.get("type") == itype and p.get("enabled", True)]
+    names = [p.get("name") for p in candidates]
+    for p in candidates:
+        if not model:
+            return 200, {"llmProvider": p.get("name")}, names
+        s, models = fetch(build_url(base, integration_path(p.get("name")) + "/integration"), token)
+        if s == 200 and any(m.get("api") == model and m.get("enabled", True) for m in models or []):
+            return 200, {"llmProvider": p.get("name"), "model": model}, names
+    return 200, None, names
+
+
+def handle_integration_wait(args):
+    require_enterprise()
+    base, token = get_config()
+    deadline = time.monotonic() + args.timeout
+    names = []
+    while True:
+        status, found, names = usable_integration(base, token, args.type, args.model)
+        if found:
+            output({"ready": True, **found})
+            return
+        if status in (401, 403):
+            output({"ready": False, "status": status,
+                    "reason": "this application may not list integrations; ask an admin"})
+            sys.exit(4)
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(args.interval)
+    output({
+        "ready": False,
+        "type": args.type,
+        "model": args.model,
+        "visibleIntegrations": names,
+        "addUrl": integration_add_url(base, args.type),
+        "next": ("visible but missing the model: add it, or share it with this application"
+                 if names else "no integration of this type is shared with this application yet"),
+    })
+    sys.exit(3)
+
+
 def handle_model_save(args):
     require_enterprise()
     base, token = get_config()
@@ -1029,6 +1106,16 @@ def main():
     p = sub.add_parser("integration-delete", help="Orkes: delete an integration provider")
     p.add_argument("--name", required=True)
 
+    p = sub.add_parser("integration-add-url", help="Orkes: the UI link where the user adds an integration of a type")
+    p.add_argument("--type", required=True, help="integration type, e.g. anthropic, openai")
+    p.add_argument("--search", default=None, help="search box prefix (default: first 3 letters of the type)")
+
+    p = sub.add_parser("integration-wait", help="Orkes: wait until an integration of a type (with a model) is usable by this application")
+    p.add_argument("--type", required=True, help="integration type, e.g. anthropic")
+    p.add_argument("--model", default=None, help="exact model id that must be registered and enabled")
+    p.add_argument("--timeout", type=int, default=300, help="seconds to wait (default 300)")
+    p.add_argument("--interval", type=int, default=5, help="seconds between checks (default 5)")
+
     p = sub.add_parser("model-list", help="Orkes: list models registered under an integration")
     p.add_argument("--provider", required=True, help="integration name")
     p.add_argument("--active-only", action="store_true")
@@ -1146,6 +1233,8 @@ def main():
         "integration-get": handle_integration_get,
         "integration-save": handle_integration_save,
         "integration-delete": handle_integration_delete,
+        "integration-add-url": handle_integration_add_url,
+        "integration-wait": handle_integration_wait,
         "model-list": handle_model_list,
         "model-save": handle_model_save,
         "model-delete": handle_model_delete,
