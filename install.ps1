@@ -114,6 +114,8 @@ $SKILL_FILES = @(
     "skills/conductor/examples/agents/typescript/openai-agents-bridge.ts",
     "skills/conductor/examples/agents/typescript/vercel-ai-tools.ts",
     "skills/conductor/examples/agents/typescript/weather-agent.ts",
+    "skills/conductor/scripts/ensure-cli.sh"
+    "skills/conductor/scripts/ensure-cli.ps1"
     "skills/conductor/scripts/conductor_api.py"
     "skills/conductor/scripts/test_conductor_api.py"
 )
@@ -1050,8 +1052,8 @@ try {
     Write-Host "GET STARTED" -ForegroundColor White
     Write-Host '  Ask your agent:'
     Write-Host ""
-    Write-Host '    "Set up both my Conductor profiles: developer and localhost.'
-    Write-Host '     Use Developer Edition by default."'
+    Write-Host '    "Connect me to Conductor with conductor login.'
+    Write-Host '     Use Developer Edition unless I give you another server URL."'
     Write-Host ""
     Write-Host "  [default] developer  https://developer.orkescloud.com/" -ForegroundColor White
     Write-Host "  [switch]  localhost  http://localhost:8080/api" -ForegroundColor White

@@ -105,6 +105,8 @@ SKILL_FILES=(
   "skills/conductor/examples/agents/typescript/openai-agents-bridge.ts"
   "skills/conductor/examples/agents/typescript/vercel-ai-tools.ts"
   "skills/conductor/examples/agents/typescript/weather-agent.ts"
+  "skills/conductor/scripts/ensure-cli.sh"
+  "skills/conductor/scripts/ensure-cli.ps1"
   "skills/conductor/scripts/conductor_api.py"
   "skills/conductor/scripts/test_conductor_api.py"
 )
@@ -1298,8 +1300,8 @@ main() {
     echo "  Ask your agent:"
   fi
   echo ""
-  echo '    "Set up both my Conductor profiles: developer and localhost.'
-  echo '     Use Developer Edition by default."'
+  echo '    "Connect me to Conductor with conductor login.'
+  echo '     Use Developer Edition unless I give you another server URL."'
   echo ""
   echo -e "  ${BOLD}[default] developer${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"
   echo -e "  ${BOLD}[switch]  localhost${NC}  ${CYAN}http://localhost:8080/api${NC}"

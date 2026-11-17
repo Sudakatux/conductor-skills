@@ -1,119 +1,131 @@
 # Server Setup
 
-Connect the agent to a Conductor server. Run through this once per environment.
+Connect the agent to a Conductor server. Run the preflight once per session,
+before the first command that talks to a server (SKILL.md Rule 15).
 
-## Server resolution order
+## Connect with `conductor login`
 
-An explicit `--profile` selects `~/.conductor-cli/config-<profile>.yaml`.
-Standard onboarding creates `developer` and `localhost`; the skill uses
-`--profile developer` unless the user selects localhost. Do not duplicate its
-credentials or edit shell startup files to make it the default.
+`conductor login` signs the user in from their browser and saves a CLI profile.
+No key or secret is typed, pasted or printed, so **the agent runs it**; the
+user only signs in and clicks **Approve**.
 
-Without a profile, the CLI uses `CONDUCTOR_SERVER_URL`, `--server`, or local
-server auto-detection. Discover saved environments with `conductor config list`;
-**never read profile YAML**, which may contain credentials. Beyond the standard
-pair, create profiles only for additional reusable connections.
-
-The Python fallback script (`scripts/conductor_api.py`) does **not** auto-detect or
-support profiles — it requires `CONDUCTOR_SERVER_URL` to be set explicitly.
-
-## Default first run — create both profiles
-
-For setup, create both profiles. Honor an explicit target instead.
-
-### 1. Developer Edition profile (default)
-
-1. Open `https://developer.orkescloud.com/` visibly and let the user sign in.
-   Use the visible menu: **Access Control → Applications**; never guess an
-   internal route. Without browser automation, give the root link and labels.
-2. The user creates `conductor-skills-cli`, grants **Metadata API**, and adds
-   **Worker** only if workers will run. Use least privilege.
-3. Hand control to the user before **Access Keys → Create access key**. The
-   secret appears once; never inspect it, read the clipboard, or request it in
-   chat.
-4. In their own terminal, the user runs:
-
-   ```bash
-   conductor config save --profile developer
-   ```
-
-   Enter `https://developer.orkescloud.com/api`, `Enterprise`, and API Key +
-   Secret directly in the prompt. Never pass credentials through agent tools or
-   command arguments.
-
-### 2. Localhost profile
-
-In the user's terminal, run:
+### 1. Resolve the CLI
 
 ```bash
-conductor config save --profile localhost
+sh <skill-dir>/scripts/ensure-cli.sh          # Windows: powershell -File <skill-dir>\scripts\ensure-cli.ps1
 ```
 
-Use `http://localhost:8080/api`, server type `OSS`, and no authentication. This
-profile can exist even when the local server is not currently running.
+- Prints `CONDUCTOR_BIN=<path>` → use that full path for every later
+  `conductor` command (`~/.local/bin` is often not on the agent's PATH).
+- Exit 3 → no CLI, or one too old to have `login`. Ask once (Rule 3), then
+  `sh <skill-dir>/scripts/ensure-cli.sh --install`. It downloads the pinned
+  release from GitHub, verifies its sha256 and installs to `~/.local/bin`
+  (`%LOCALAPPDATA%\Programs\conductor` on Windows). No sudo, no Node, no shell
+  startup edits.
+- A checksum mismatch: stop and report it.
 
-### 3. Verify and select
+### 2. Pick the server and profile
 
-Discover names without reading credential files:
+| Request says | Server | Profile |
+|---|---|---|
+| a URL (`connect to https://acme.orkesconductor.com`, a `Conductor server:` line) | that URL | `acme` (host's first label) |
+| a profile name that exists | that profile's server | that name |
+| nothing, and `conductor config list` shows **no** profiles | `https://developer.orkescloud.com` | `developer` |
+| nothing, and profiles exist | ask which one (one question, Rule 14) | — |
+
+Never fall back to `developer` silently: when you use it by default, say
+*"Using Developer Edition. Give me a URL to use another Conductor server."*
+
+### 3. Reuse a working profile
 
 ```bash
-conductor config list
-conductor --profile developer whoami
-conductor --profile developer workflow list --json
+"$CONDUCTOR_BIN" config list                      # names only; never read the YAML
+"$CONDUCTOR_BIN" --profile acme whoami
 ```
 
-If a local server is running, also verify:
+Success → skip to the task. A 401/403 or "Profile doesn't exist" → step 4.
+
+### 4. Log in
+
+Tell the user: *"Opening your browser to connect to acme.orkesconductor.com —
+sign in and click **Approve**."* Then run, with a long timeout (it waits up to
+5 minutes):
 
 ```bash
-conductor --profile localhost workflow list --json
+"$CONDUCTOR_BIN" login --server https://acme.orkesconductor.com --profile acme
+# replacing a broken profile non-interactively: add --yes
 ```
 
-Later skill operations default to `conductor --profile developer ...`; use
-`--profile localhost` when requested. A user may set
-`CONDUCTOR_PROFILE=developer` in their current shell, but the agent must not edit
-shell startup files.
+What happens: the CLI listens on `127.0.0.1`, opens
+`https://acme.orkesconductor.com/?setup=cli&port=…&state=…`, the user signs in
+and approves, the Launch Pad creates an access key for the `coding-agent`
+application and hands it to the CLI, which saves
+`~/.conductor-cli/config-acme.yaml` and checks the key. Output ends with
+`✓ Saved profile "acme"`.
 
-## Step 1 — Install the CLI
-
-Check whether `conductor` is already installed:
+### 5. Verify, then do the task
 
 ```bash
-conductor --version
+"$CONDUCTOR_BIN" --profile acme whoami
+"$CONDUCTOR_BIN" --profile acme workflow list --json
 ```
 
-If not installed, check for npm/Node.js:
+Continue the original request with `--profile acme`. Don't stop at "setup
+complete".
+
+### When the browser can't reach the CLI
+
+`login` times out when the browser runs on another machine (SSH, a container,
+a cloud agent) or the page can't post back. It prints a fallback: open
+`https://<server>/?setup=key`, then the user runs, **in their own terminal**:
 
 ```bash
-npm --version
+conductor config save --profile acme
 ```
 
-If npm is also missing, install Node.js first:
+and enters the server URL (`…/api`), `Enterprise`, `1` (API Key + Secret), and
+the key id and secret the page shows. Never ask for those values in chat, never
+read the clipboard or the profile YAML. If the server has no Launch Pad
+approval page, the user creates the key under **Access Control → Applications**
+instead (application `coding-agent`, roles `METADATA_API` + `WORKER`).
+
+A pasted secret is compromised: follow SKILL.md Rule 5.
+
+## Local server (OSS)
+
+A local OSS server needs no login:
 
 ```bash
-# macOS
-brew install node
-# Linux (Debian/Ubuntu)
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs
+"$CONDUCTOR_BIN" server start
+"$CONDUCTOR_BIN" config save --profile localhost   # http://localhost:8080/api, OSS, no auth
+"$CONDUCTOR_BIN" --profile localhost workflow list --json
 ```
 
-For installing the CLI itself, two options:
+Use `--profile localhost` only when the user asks for local.
 
-- **Recommended (no global install):** invoke as `npx @conductor-oss/conductor-cli ...` for one-off use. No system modification.
-- **Global install (ask the user first):** `npm install -g @conductor-oss/conductor-cli`. Modifies the global npm prefix — confirm before running. Once approved, verify with `conductor --version`.
+## Profiles
 
-**Fallback** — only after the CLI is genuinely unavailable (`conductor --version` fails) **and** Node/npm cannot be installed (restricted environment, no package manager), fall back to the bundled REST API script:
+Profiles live in `~/.conductor-cli/config-<profile>.yaml` and may hold
+credentials: discover them with `conductor config list`, never by reading the
+files. Add another server any time with `conductor login --server <url>`.
 
-```bash
-export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"
-```
+The Python fallback script (`scripts/conductor_api.py`) does **not** support
+`login`; it reads a profile via `--profile <name>` (internally, never printed)
+or `CONDUCTOR_SERVER_URL` plus injected credentials.
 
-The fallback supports a subset of CLI commands — see [fallback-cli.md](fallback-cli.md). It supports either a pre-existing token or Orkes key/secret exchange, but it does not support profiles, server auto-detection, task-definition CRUD, or time-range search.
+**Fallback** — only when the CLI cannot be installed at all (see SKILL.md
+Rule 3): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`
+and see [fallback-cli.md](fallback-cli.md).
 
-## Step 2 — Choose and normalize a server
+## Without login: an explicit URL or environment variables (CI)
+
+For CI, containers and servers that already have credentials injected. Interactive
+users on Orkes should use [`conductor login`](#connect-with-conductor-login).
+
+### Choose and normalize a server
 
 If the user already supplied a server URL or selected a profile, use it
-immediately. If this is a generic first-time setup, use the dual-profile flow
-above. Otherwise ask the user:
+immediately. For an interactive first-time setup, use [`conductor login`](#connect-with-conductor-login). Otherwise ask the user:
 
 - **Option A** — Start a local server (good for development/testing).
 - **Option B** — Connect to an existing remote server.
@@ -152,7 +164,7 @@ Examples:
 | `https://pg-qa.orkesconductor.com` | `https://pg-qa.orkesconductor.com/api` |
 | `https://host.example/api` | unchanged |
 
-## Step 3 — Test connectivity and handle auth
+### Test connectivity and handle auth
 
 ```bash
 conductor workflow list
@@ -195,7 +207,7 @@ Re-test: `conductor workflow list`
 If the user pasted a credential into chat, follow SKILL.md Rule 5: treat it as
 compromised, do not use or repeat it, and recommend rotation.
 
-## Step 4 — Verify
+### Verify
 
 ```bash
 conductor whoami                 # useful on authenticated Enterprise servers
@@ -204,7 +216,7 @@ conductor workflow list
 
 Report the result to the user. Setup complete.
 
-## Step 5 — Enable agents (only if the user will build or call agents)
+## Enable agents (only if the user will build or call agents)
 
 ```bash
 export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"   # used with the CLI for agent verbs it lacks
@@ -221,7 +233,9 @@ python3 "$CONDUCTOR_API" providers-status          # which LLM providers have ke
 
 Then continue with [agents.md](agents.md) and [agent-sdks.md](agent-sdks.md).
 
-## Additional named profiles
+## Additional named profiles (manual)
+
+Prefer `conductor login --server <url> --profile <name>`. The manual form:
 
 The current CLI saves profiles interactively. This is deliberate: putting
 `--auth-key` or `--auth-secret` values in a command would expose them in shell

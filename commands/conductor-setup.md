@@ -1,21 +1,18 @@
 ---
 name: conductor-setup
-description: First-time Conductor setup — install the CLI, create profiles, configure auth
+description: First-time Conductor setup — get the CLI, connect with conductor login, verify
 ---
 
-Walk the user through Conductor first-time setup using [skills/conductor/references/setup.md](../skills/conductor/references/setup.md).
+Connect the user to a Conductor server using [skills/conductor/references/setup.md](../skills/conductor/references/setup.md#connect-with-conductor-login).
 
 Don't skip checks. Specifically:
 
-- Run `conductor --version` first; if missing, prefer `npx @conductor-oss/conductor-cli` over global install.
-- **Confirm with the user before** running `npm install -g @conductor-oss/conductor-cli` — it's a system-modifying action.
-- For a generic first-time request, create both interactive profiles: `developer` and `localhost`. Default later commands to `--profile developer`. Honor explicit local-only, remote-only, URL, or named-profile requests instead.
-- For `developer`, open `https://developer.orkescloud.com/` visibly when browser automation is available, let the user sign in, then navigate from the visible UI through **Access Control → Applications**. Do not guess an internal UI URL.
-- Hand control to the user before **Create access key**. The user creates the application/key and enters the one-time key/secret directly into `conductor config save --profile developer`; never read the page after key generation, the clipboard, the secret, or profile YAML.
-- Create `localhost` with interactive `conductor config save --profile localhost`, using `http://localhost:8080/api`, `OSS`, and no auth.
-- Normalize a root remote URL by appending `/api`; preserve an existing `/api` or custom non-root path. Set `CONDUCTOR_SERVER_TYPE=Enterprise` for Orkes.
-- Request auth setup only after `conductor workflow list` returns 401/403, or when the user explicitly says the target requires auth.
-- Never ask for credentials in chat. Have the user inject `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET` (or `CONDUCTOR_AUTH_TOKEN`) through a secure environment, and never echo them or put them in command arguments.
-- For reusable connections, use the interactive `conductor config save --profile NAME`; discover them with `conductor config list`, never by reading profile YAML.
+- Run `sh <skill-dir>/scripts/ensure-cli.sh` (Windows: `ensure-cli.ps1`) and use the `CONDUCTOR_BIN` path it prints for every command. On exit 3, **ask the user before** running it with `--install` (one checksum-verified download to `~/.local/bin`; no sudo, no Node).
+- Server: a URL the user named wins. With none and no existing profiles, use Developer Edition (`https://developer.orkescloud.com`) and say so in one line; if profiles exist, ask which. Profile: `developer`, or the host's first label.
+- If that profile exists, `whoami` it; when it works, stop here.
+- Otherwise tell the user to sign in and click **Approve** in the browser, then **run** `"$CONDUCTOR_BIN" login --server <root-url> --profile <name>` yourself (long timeout; no secret is typed or printed).
+- On timeout (browser on another machine), give the `?setup=key` link it prints and have the user run interactive `conductor config save --profile <name>` in their own terminal.
+- Never ask for credentials in chat, put them in command arguments, read the clipboard, or read `~/.conductor-cli/config-*.yaml`.
+- Local OSS only when asked: `conductor server start` and an interactive `localhost` profile (`http://localhost:8080/api`, OSS, no auth).
 
-End with `conductor config list` and `conductor --profile developer workflow list --json`. Verify `localhost` too when its server is running.
+End with `"$CONDUCTOR_BIN" config list` and `"$CONDUCTOR_BIN" --profile <name> whoami`.

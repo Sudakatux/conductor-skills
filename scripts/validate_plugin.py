@@ -311,14 +311,15 @@ def check_remote_setup_contract() -> None:
     if setup.exists():
         contents = setup.read_text()
         for required in (
-            "conductor config save --profile developer",
-            "conductor config save --profile localhost",
-            "conductor --profile developer workflow list --json",
-            "Access Control → Applications",
+            "scripts/ensure-cli.sh",
+            "login --server",
+            "?setup=key",
+            "conductor config save --profile",
+            "Never fall back to `developer` silently",
         ):
             if required not in contents:
                 fail(
-                    f"{setup.relative_to(ROOT)}: default dual-profile setup missing "
+                    f"{setup.relative_to(ROOT)}: conductor login setup missing "
                     f"{required!r}"
                 )
 
@@ -327,7 +328,7 @@ def check_remote_setup_contract() -> None:
             continue
         contents = installer.read_text()
         for required in (
-            "both my Conductor profiles: developer and localhost",
+            "Connect me to Conductor with conductor login",
             "[default] developer",
         ):
             if required not in contents:

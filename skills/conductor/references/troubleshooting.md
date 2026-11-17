@@ -11,7 +11,8 @@
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| `conductor: command not found` | CLI not installed | Run `npx @conductor-oss/conductor-cli ...`, or ask the user before global install (see [setup.md](setup.md)). If npm itself is missing, fall back to `scripts/conductor_api.py`. |
+| `conductor: command not found` | CLI not installed | Run `sh <skill-dir>/scripts/ensure-cli.sh`; on exit 3 ask, then `--install` (see [setup.md](setup.md#1-resolve-the-cli)). Use the printed `CONDUCTOR_BIN` path. Only if it cannot install, fall back to `scripts/conductor_api.py`. |
+| `unknown command "login"` | CLI older than `login` | `sh <skill-dir>/scripts/ensure-cli.sh --install` (after asking) and use the printed path. |
 | `Connection refused` / `URLError` | Server not running, or wrong URL | Verify `CONDUCTOR_SERVER_URL`. A remote root/UI URL normally needs `/api` appended exactly once. For local servers run `conductor server status`. |
 | `401 Unauthorized` | Missing, incomplete, or invalid auth | Securely inject either `CONDUCTOR_AUTH_TOKEN` or both `CONDUCTOR_AUTH_KEY` + `CONDUCTOR_AUTH_SECRET`; the CLI, SDKs, and Python fallback exchange an Orkes key pair automatically. Never print the values. Re-run `conductor workflow list` to confirm. |
 | `403 Forbidden` | Token valid but lacks permissions | Confirm with the user that the credentials have access to the target workflow/namespace. |
