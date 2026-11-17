@@ -21,7 +21,8 @@ $ErrorActionPreference = "Stop"
 $SCRIPT_VERSION = "1.8.0"
 # Per-file fetches and the upgrade-check both read from `main`. Releases are
 # rolled by bumping VERSION on main, not by tagging.
-$REPO_BASE = "https://raw.githubusercontent.com/conductor-oss/conductor-skills/main"
+# FORK ONLY: serve files from the fork branch (drop before upstreaming).
+$REPO_BASE = "https://raw.githubusercontent.com/Sudakatux/conductor-skills/conductor-login-setup"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -520,7 +521,9 @@ function Install-Claude {
     $marketplaceEntry = [PSCustomObject]@{
         source = [PSCustomObject]@{
             source = 'github'
-            repo   = 'conductor-oss/conductor-skills'
+            # FORK ONLY: the fork branch (drop before upstreaming).
+            repo   = 'Sudakatux/conductor-skills'
+            ref    = 'conductor-login-setup'
         }
     }
 
