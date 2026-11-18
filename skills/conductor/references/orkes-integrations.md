@@ -8,7 +8,7 @@ On **OSS** Conductor an LLM provider is enabled by putting its key in the server
 | Model (integration resource) | An exact provider model id registered under the integration, e.g. `gpt-4o-mini` | `model: "gpt-4o-mini"` |
 | Access | Permission for an application / group / role on the integration | none — missing access surfaces as a 403 / access error at run time |
 
-The `conductor` CLI has **no integration commands** (and `conductor doctor` only checks *local* env vars — it says nothing about the cluster's integrations). Use the bundled script even when the CLI is installed: `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
+The `conductor` CLI that `scripts/ensure-cli.sh` installs has `conductor integration add | list | models | add-model`. `integration add` asks for secrets with a **hidden prompt**, so the **user** runs it in their own terminal (§2); never the agent. Everything else here uses the bundled script (`conductor doctor` only checks *local* env vars, nothing on the cluster): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
 
 ## 1. Check what exists — before writing any LLM task for Orkes
 
@@ -25,18 +25,16 @@ profile holds). An empty list does not mean the cluster has none.
   (`llmProvider` = integration name, `model` = exact id) and tell the user which.
 - The integration is visible but lacks the model → `model-save --provider <integration> --model <id>`
   (any signed-in identity may add a *new* model). If that returns 403, use §2.
-- Nothing suitable is visible → §2. Don't reach for `integration-save`: the
-  `coding-agent` application has no right to create integrations (its roles are
-  `METADATA_API` + `WORKER`), and the provider key must never pass through chat
-  or command arguments, nor be exported just for the agent. Only when the user
-  says the key is **already** in the environment and the identity may create
-  integrations (CI, an admin key) use §3's script route — and fall back to §2 on
-  any 403.
+- Nothing suitable is visible → §2. The provider key must come from the user,
+  through a hidden prompt — never chat, command arguments, or an environment
+  variable exported just for the agent. Only when the user says the key is
+  **already** in the environment (CI, an admin key) use §3's script route.
 
-## 2. Missing integration — the user adds it in the browser
+## 2. Missing integration — the user creates it
 
-The signed-in user can create integrations from the UI; the agent opens the
-right page and waits.
+The `coding-agent` application `conductor login` creates has `METADATA_MANAGER`
+(+ `WORKER`), so it may create integrations. What it must not do is see the
+provider key, so the **user** types it.
 
 1. **Pick the provider and model.** From the prompt ("use Claude", "with
    GPT-4o"); otherwise ask once: *"Which LLM provider should this use —
@@ -44,25 +42,28 @@ right page and waits.
    `openai`, `azure_openai`, `vertex_ai`, `aws_bedrock_anthropic`, `mistral`,
    …; `integration-defs --category AI_MODEL` lists them). Pick the model id as in
    §3 (current, from the provider's models page — not from memory).
-2. **Open the add-integration page** on the connected server (the URL is built
-   from the profile's server, never localhost):
+
+2. **Ask the user to run the CLI in their own terminal** (default). Use the
+   full `CONDUCTOR_BIN` path `ensure-cli.sh` printed and the session's profile:
 
    ```bash
-   URL=$(python3 "$CONDUCTOR_API" --profile <p> integration-add-url --type anthropic)
-   open "$URL"        # Linux: xdg-open "$URL"   Windows: start "" "$URL"
+   /Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model claude-sonnet-4-6
    ```
 
-   e.g. `https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic`.
-   If no browser can be opened, print the link.
-3. **Tell the user, in plain words** (one message):
-   - *"In the tab that just opened, add your **Anthropic** API key and save the integration."*
-   - *"Then add the model **claude-sonnet-4-6** to it (**Add Model**)."*
-   - *"Then share the integration with the **coding-agent** application: **Access Control → Applications → coding-agent → Integration** tab, and turn on that model."* <!-- share-step: drop once the integrations page shares with the calling application itself -->
-   - *"Tell me **done** when you've finished. I'm checking every few seconds."*
+   Say, in one message: *"In a terminal of your own (not here), run the command
+   above. It asks for your **Anthropic** API key without showing it, checks the
+   key, creates the integration and adds **claude-sonnet-4-6**. Tell me **done**
+   when it prints ✓."* Notes:
+   - Never run it yourself: it needs the user's terminal (it refuses without
+     one), and the key must not pass through you.
+   - Other types use the same command; it asks for each field the server
+     defines (Bedrock connection type, region, role ARN; Vertex service-account
+     file path; Azure endpoint). Non-secret values may be preset with
+     `--set field=value`; secrets are refused there.
+   - The application owns what it creates. Add `--share-with <their email>` if
+     the user wants to see and manage it in the UI.
 
-   Never ask for the key in chat. If the user pastes one anyway, Rule 5 applies
-   (treat it as compromised, don't use it, recommend rotating it).
-4. **Wait for it**, then carry on with the original task:
+3. **Wait for it**, then carry on with the original task:
 
    ```bash
    python3 "$CONDUCTOR_API" --profile <p> integration-wait --type anthropic --model claude-sonnet-4-6
@@ -71,14 +72,38 @@ right page and waits.
 
    - `{"ready": true, "llmProvider": "<name>", "model": "<id>"}` → use those
      names and continue.
-   - Exit 3 (`ready: false`) → read `next`: *visible but missing the model* →
-     ask the user to add the model / turn it on for `coding-agent`; *not shared
-     yet* → remind them of step 3. When they say **done**, run it again.
-   - Exit 4, or the user says they can't create integrations (no **New
-     Integration** button, a permission error) → **stop**: *"Your account can't
-     create integrations on this cluster. Ask an admin to add an Anthropic
-     integration with the model claude-sonnet-4-6 and share it with the
-     coding-agent application, then tell me and I'll continue."*
+   - Exit 3 (`ready: false`) → read `next` and the user's output; when they
+     say **done**, run it again.
+
+4. **Fall back to the browser page** when the user has no terminal on the
+   machine that holds the profile (a cloud or web agent, a remote container),
+   prefers the UI, or `integration add` reports **HTTP 403** (the application
+   lacks the role — e.g. it was approved before the role change: re-running
+   `conductor login` and **Approve** fixes that; otherwise use the page):
+
+   ```bash
+   URL=$(python3 "$CONDUCTOR_API" --profile <p> integration-add-url --type anthropic)
+   open "$URL"        # Linux: xdg-open "$URL"   Windows: start "" "$URL"   No browser: print it
+   ```
+
+   e.g. `https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic`
+   (built from the profile's server, never localhost). Tell the user:
+   - *"In the tab that just opened, add your **Anthropic** API key and save the integration."*
+   - *"Then add the model **claude-sonnet-4-6** to it (**Add Model**)."*
+   - *"Then share the integration with the **coding-agent** application: **Access Control → Applications → coding-agent → Integration** tab, and turn on that model."* <!-- share-step: drop once the integrations page shares with the calling application itself -->
+   - *"Tell me **done** when you've finished."*
+
+   Then wait as in step 3.
+
+5. **Stop** when neither works — `integration-wait` exits 4, or the user can't
+   create integrations in the UI either (no **New Integration** button, a
+   permission error): *"Neither the coding-agent application nor your account
+   can create integrations on this cluster. Ask an admin to add an Anthropic
+   integration with the model claude-sonnet-4-6 and share it with the
+   coding-agent application, then tell me and I'll continue."*
+
+Never ask for the key in chat. If the user pastes one anyway, Rule 5 applies
+(treat it as compromised, don't use it, recommend rotating it).
 
 ## 3. Models
 
@@ -138,7 +163,7 @@ Single model: `python3 "$CONDUCTOR_API" model-save --provider openai-prod --mode
 
 ## 4. Grant access
 
-- The identity that **created** the integration gets full access automatically. When the user creates it in the UI (§2), that is the user, not the `coding-agent` application, so it must be **shared** with the application: **Access Control → Applications → coding-agent → Integration** tab, toggle the models. <!-- share-step -->
+- The identity that **created** the integration gets full access automatically. With `conductor integration add` (§2) that is the `coding-agent` application, so its workflows can use it at once; the user sees it in the UI only if it was shared back (`--share-with`) or they are an admin. When the user creates it in the UI (§2 step 4), the user owns it, so it must be **shared** with the application: **Access Control → Applications → coding-agent → Integration** tab, toggle the models. <!-- share-step -->
 - Other groups / roles / users: `python3 "$CONDUCTOR_API" grant-access --subject-type group --subject-id <group> --target-id openai-prod --access READ,EXECUTE` (`--target-type` defaults to `INTEGRATION_PROVIDER`).
 - Don't guess an API subject id for an application; share it in the UI and confirm with `integration-wait` (it only succeeds once the application can see the model).
 - Check: `python3 "$CONDUCTOR_API" access-list --target-id openai-prod`.
@@ -213,9 +238,10 @@ OSS has no prompt registry: prompts are always literal text and `prompt-*` comma
 | "this server does not require auth, so it is OSS" / integration endpoints 404 | Server is OSS — integration APIs don't exist there (a 404 for one name on Enterprise = that integration doesn't exist) | OSS uses server env keys — see [setup.md](setup.md) Step 5 |
 | *"Prompt … is not associated with integration … and model …"* | Literal text in `instructions` / `promptName` / image `prompt` without `allowRawPrompts`, or the template isn't associated with that `integration:model` | Use a template name and `prompt-save … --model <integration>:<model>`, or set `allowRawPrompts: true` (§6) |
 | Registration fails: *"taskReferenceName: x … is not defined"* for prompt text | `${x}` template placeholder written inline in the workflow | Move the text into a saved template, or use a real expression (§6) |
-| `integration-list` returns 403 / `integration-wait` exits 4 | This application can't list integrations | Stop: ask an admin to create and share the integration (§2 step 4) |
-| `integration-save` returns 403 | This identity can't create integrations (normal for `coding-agent`) | §2: the user adds it in the browser |
+| `integration-list` returns 403 / `integration-wait` exits 4 | This application can't list integrations | Stop: ask an admin to create and share the integration (§2 step 5) |
+| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | Re-run `conductor login` → **Approve**, or use the browser page (§2 step 4) |
+| `integration-save` returns 403 | This identity can't create integrations | §2: `conductor integration add` in the user's terminal, or the browser page |
 | `integration-save`: "already exists" | Name taken | Use it (add models with `model-save`), or, with admin/CI credentials, `--overwrite` with all secrets re-supplied |
 | A `*-env` flag says the variable isn't set | Shell expanded `$VAR` into a value, or the variable isn't exported | Pass the bare name; ask the user to export it |
 
-Never work around a missing integration with an `HTTP` task to the provider API (rule B10) — have the user add it (§2).
+Never work around a missing integration with an `HTTP` task to the provider API (rule B10) — have the user create it (§2).

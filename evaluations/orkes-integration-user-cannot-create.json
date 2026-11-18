@@ -3,11 +3,11 @@
   "skills": [
     "conductor"
   ],
-  "query": "I opened the integrations page you sent but there's no New Integration button and when I try the URL directly it says I don't have permission. What now? (Context: you were waiting for an OpenAI integration with gpt-4o-mini for profile `acme`, coding-agent application.)",
+  "query": "I opened the integrations page you sent but there's no New Integration button and when I try the URL directly it says I don't have permission. What now? (Context: `conductor integration add` had returned HTTP 403 even after re-running `conductor login`, so you sent the browser page; you were waiting for an OpenAI integration with gpt-4o-mini for profile `acme`, coding-agent application.)",
   "expected_behavior": [
     "Step 1: Recognize the user's own account can't create integrations on this cluster",
     "Step 2: Stop the integration flow — don't retry integration-save, don't ask for the OpenAI key, don't suggest an HTTP task to api.openai.com",
-    "Step 3: Give a clear message to forward: ask an admin to create an OpenAI integration with gpt-4o-mini and share it with the coding-agent application (Access Control → Applications → coding-agent → Integration tab)",
+    "Step 3: Give a clear message to forward: neither the coding-agent application nor the user can create integrations here, so ask an admin to create an OpenAI integration with gpt-4o-mini and share it with the coding-agent application (Access Control → Applications → coding-agent → Integration tab)",
     "Step 4: Offer to continue once the admin is done: rerun `integration-wait --type openai --model gpt-4o-mini` when the user says so"
   ],
   "success_criteria": [

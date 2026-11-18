@@ -16,6 +16,6 @@
     "Grants access on the existing `openai-prod` integration (target type `INTEGRATION_PROVIDER`) — e.g. `grant-access` / `POST /api/auth/authorization` for the group, with READ and EXECUTE — instead of creating a new integration",
     "For the other team's application, points to the UI Access Control → Applications → Integration tab (or otherwise avoids inventing an application subject-id format)",
     "Verifies with `access-list` (or `GET /api/auth/authorization/INTEGRATION_PROVIDER/openai-prod`) or `integration-wait` as the other application, and a re-run of the failing workflow",
-    "Does not share or re-enter the OpenAI key, does not create a second integration, and does not invent a `conductor integration` CLI command"
+    "Does not share or re-enter the OpenAI key, does not create a second integration, and does not invent CLI commands that don't exist (the CLI has `conductor integration add|list|models|add-model`, but no grant/access or integration-update verbs)"
   ]
 }

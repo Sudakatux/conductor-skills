@@ -499,7 +499,7 @@ def handle_agent_stop(args):
 
 # ---------------------------------------------------------------------------
 # Orkes integrations: AI providers, models, access (references/orkes-integrations.md).
-# The `conductor` CLI has no integration commands. Orkes-only: OSS returns 404.
+# The CLI's `integration add` (hidden key prompt) is for the user; these cover the rest. Orkes-only: OSS returns 404.
 # ---------------------------------------------------------------------------
 
 _SECRET_HINTS = ("key", "secret", "token", "password", "credential", "file")

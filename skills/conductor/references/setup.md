@@ -87,7 +87,7 @@ and enters the server URL (`…/api`), `Enterprise`, `1` (API Key + Secret), and
 the key id and secret the page shows. Never ask for those values in chat, never
 read the clipboard or the profile YAML. If the server has no Launch Pad
 approval page, the user creates the key under **Access Control → Applications**
-instead (application `coding-agent`, roles `METADATA_API` + `WORKER`).
+instead (application `coding-agent`, roles `METADATA_MANAGER` + `WORKER`).
 
 A pasted secret is compromised: follow SKILL.md Rule 5.
 
