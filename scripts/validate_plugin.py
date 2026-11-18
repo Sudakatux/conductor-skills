@@ -312,14 +312,14 @@ def check_remote_setup_contract() -> None:
         contents = setup.read_text()
         for required in (
             "scripts/ensure-cli.sh",
-            "login --server",
+            "create-app --server",
             "?setup=key",
             "conductor config save --profile",
             "Never fall back to `developer` silently",
         ):
             if required not in contents:
                 fail(
-                    f"{setup.relative_to(ROOT)}: conductor login setup missing "
+                    f"{setup.relative_to(ROOT)}: conductor create-app setup missing "
                     f"{required!r}"
                 )
 
@@ -328,7 +328,7 @@ def check_remote_setup_contract() -> None:
             continue
         contents = installer.read_text()
         for required in (
-            "Connect me to Conductor with conductor login",
+            "Connect me to Conductor with conductor create-app",
             "[default] developer",
         ):
             if required not in contents:

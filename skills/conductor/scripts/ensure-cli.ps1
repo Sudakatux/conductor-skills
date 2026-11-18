@@ -1,4 +1,4 @@
-# Find a conductor CLI that has `login` and `integration`, or install the pinned release.
+# Find a conductor CLI that has `create-app` and `integration`, or install the pinned release.
 #
 #   powershell -File ensure-cli.ps1            # check only; exit 3 when missing
 #   powershell -File ensure-cli.ps1 -Install   # download, verify sha256, install
@@ -10,11 +10,11 @@ param([switch]$Install)
 $ErrorActionPreference = 'Stop'
 
 # Pinned release; keep in step with ensure-cli.sh.
-$CliRepo = 'Sudakatux/conductor-cli'   # FORK ONLY: conductor-oss/conductor-cli once `login` ships
-$CliVersion = 'v0.1.10-login.2'
+$CliRepo = 'Sudakatux/conductor-cli'   # FORK ONLY: conductor-oss/conductor-cli once `create-app` ships
+$CliVersion = 'v0.1.10-createapp.1'
 $Sha = @{
-    'conductor_windows_amd64.exe' = '80239bf1fadcd82e37acdc64a47dbd72464b4974347b860dc2c4c65dcf772280'
-    'conductor_windows_arm64.exe' = '16fd50554be9b86a59d2e1c679791f2858907886a3b3c5756d4b9e2c218b6898'
+    'conductor_windows_amd64.exe' = '6c33da39d20328a49f0dd8af008d82c8a423e0b27b35d16eca79d0802416103b'
+    'conductor_windows_arm64.exe' = 'ab473bb709b1685fc91986d89407bd1ab8bcd77f11237db95d7f32d1e2ba5c77'
 }
 
 $Dir = if ($env:CONDUCTOR_CLI_DIR) { $env:CONDUCTOR_CLI_DIR } else { Join-Path $env:LOCALAPPDATA 'Programs\conductor' }
@@ -22,7 +22,7 @@ $Target = Join-Path $Dir 'conductor.exe'
 
 function Test-Login([string]$Path) {
     if (-not $Path -or -not (Test-Path $Path)) { return $false }
-    & $Path login --help *> $null
+    & $Path create-app --help *> $null
     if ($LASTEXITCODE -ne 0) { return $false }
     & $Path integration add --help *> $null
     return $LASTEXITCODE -eq 0
@@ -33,7 +33,7 @@ if (Test-Login $onPath) { "CONDUCTOR_BIN=$onPath"; exit 0 }
 if (Test-Login $Target) { "CONDUCTOR_BIN=$Target"; exit 0 }
 
 if (-not $Install) {
-    if ($onPath) { [Console]::Error.WriteLine("MISSING: $onPath lacks 'login' or 'integration' (too old).") }
+    if ($onPath) { [Console]::Error.WriteLine("MISSING: $onPath lacks 'create-app' or 'integration' (too old).") }
     else { [Console]::Error.WriteLine('MISSING: no conductor CLI found.') }
     [Console]::Error.WriteLine("Ask the user, then run: powershell -File `"$PSCommandPath`" -Install  (installs $CliVersion to $Dir)")
     exit 3
@@ -55,6 +55,6 @@ if ($got -ne $Sha[$asset]) {
 
 New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 Move-Item -Force $tmp $Target
-if (-not (Test-Login $Target)) { [Console]::Error.WriteLine("installed $Target but it has no 'login'"); exit 1 }
+if (-not (Test-Login $Target)) { [Console]::Error.WriteLine("installed $Target but it has no 'create-app'"); exit 1 }
 [Console]::Error.WriteLine("Installed conductor $CliVersion (sha256 verified).")
 "CONDUCTOR_BIN=$Target"

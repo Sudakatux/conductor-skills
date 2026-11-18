@@ -3,7 +3,7 @@
   "skills": [
     "conductor"
   ],
-  "query": "/conductor connect to https://acme.orkesconductor.com and build a workflow that summarizes a support ticket with Claude. (Context: `conductor login` already saved profile `acme` for the coding-agent application, which has METADATA_MANAGER; ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `integration-list --category AI_MODEL` returns []. The user is on their own laptop with a terminal.)",
+  "query": "/conductor connect to https://acme.orkesconductor.com and build a workflow that summarizes a support ticket with Claude. (Context: `conductor create-app` already saved profile `acme` for the default_app application, which has METADATA_MANAGER; ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `integration-list --category AI_MODEL` returns []. The user is on their own laptop with a terminal.)",
   "expected_behavior": [
     "Step 1: Use profile `acme`; recognize Orkes, where LLM providers are integrations (Rule 16)",
     "Step 2: `python3 \"$CONDUCTOR_API\" --profile acme integration-list --category AI_MODEL` → nothing usable",
@@ -12,7 +12,7 @@
     "Step 5: Do not run that command itself, do not ask for the Anthropic key, and do not tell the user to export it",
     "Step 6: `integration-wait --type anthropic --model <id>`; rerun when the user says done",
     "Step 7: With the returned `llmProvider` name, save a prompt template (Rule 18), write the LLM_CHAT_COMPLETE workflow to a file, register it and run a verification execution",
-    "Step 8: Mention the fallback: if the command reports HTTP 403 (re-run `conductor login` + Approve) or the user prefers the UI, open the add-integration page instead"
+    "Step 8: Mention the fallback: if the command reports HTTP 403 (re-run `conductor create-app` + Approve) or the user prefers the UI, open the add-integration page instead"
   ],
   "success_criteria": [
     "Checks integration-list (and model-list if something is visible) before acting",

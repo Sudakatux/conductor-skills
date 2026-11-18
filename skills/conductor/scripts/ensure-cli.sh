@@ -1,5 +1,5 @@
 #!/bin/sh
-# Find a conductor CLI that has `login` and `integration`, or install the pinned release.
+# Find a conductor CLI that has `create-app` and `integration`, or install the pinned release.
 #
 #   sh ensure-cli.sh            # check only; exit 3 when missing
 #   sh ensure-cli.sh --install  # download, verify sha256, install (no sudo, no Node)
@@ -13,14 +13,14 @@ set -eu
 
 # Pinned release. Bump all three together. sha256 values are GitHub's per-asset
 # digests (gh api repos/<repo>/releases/tags/<tag> -q '.assets[]|.name+" "+.digest').
-CLI_REPO="Sudakatux/conductor-cli"   # FORK ONLY: conductor-oss/conductor-cli once `login` ships
-CLI_VERSION="v0.1.10-login.2"
+CLI_REPO="Sudakatux/conductor-cli"   # FORK ONLY: conductor-oss/conductor-cli once `create-app` ships
+CLI_VERSION="v0.1.10-createapp.1"
 sha_for() {
   case "$1" in
-    conductor_darwin_amd64) echo 03c8f80168864c069b8c2c612a93924a54bf19acdbc0019f4ada2ce0a3753c38 ;;
-    conductor_darwin_arm64) echo 0d82ad702727c21ea18657997a768f43dfe259272cb5bf8382f78ae0913dbd6d ;;
-    conductor_linux_amd64)  echo 31d66360514e4642e3dbc52f215c3efe12231400633a7d7445e1b6af9a6c6a50 ;;
-    conductor_linux_arm64)  echo 49592b6b8a0583f54ecc0bf84a8c3bf95fa076ad0aca1932315581d7cf4d9700 ;;
+    conductor_darwin_amd64) echo cbbf992bf1afe3b02972052339fa906e0da12e412f693679da9dac1680c23a71 ;;
+    conductor_darwin_arm64) echo a45a77a2e83a7be8ad1fdc452446cfb96f439dac6d4a2d3f0fc1a5ed64afed4b ;;
+    conductor_linux_amd64)  echo 9b9af7c15353507554c7c60d566c977fbb97437d4d18fd8522f6a24d854c3d41 ;;
+    conductor_linux_arm64)  echo 2eaf043df724258a9f92a466e87021fa6e6f28e842cdb38d6d8deb027149bac8 ;;
     *) echo "" ;;
   esac
 }
@@ -35,9 +35,9 @@ for arg in "$@"; do
   esac
 done
 
-# A usable CLI knows `login` (connect without a pasted secret) and `integration`
+# A usable CLI knows `create-app` (connect without a pasted secret) and `integration`
 # (add an LLM provider with a hidden key prompt). Older ones are "too old".
-has_login() { [ -x "$1" ] && "$1" login --help >/dev/null 2>&1 && "$1" integration add --help >/dev/null 2>&1; }
+has_login() { [ -x "$1" ] && "$1" create-app --help >/dev/null 2>&1 && "$1" integration add --help >/dev/null 2>&1; }
 
 found() { echo "CONDUCTOR_BIN=$1"; exit 0; }
 
@@ -46,7 +46,7 @@ if has_login "$DIR/conductor"; then found "$DIR/conductor"; fi
 
 if [ "$INSTALL" -ne 1 ]; then
   if c=$(command -v conductor 2>/dev/null) || { [ -x "$DIR/conductor" ] && c="$DIR/conductor"; }; then
-    echo "MISSING: $c lacks 'login' or 'integration' (too old)." >&2
+    echo "MISSING: $c lacks 'create-app' or 'integration' (too old)." >&2
   else
     echo "MISSING: no conductor CLI found." >&2
   fi
@@ -87,7 +87,7 @@ fi
 mkdir -p "$DIR"
 chmod 755 "$tmp/conductor"
 mv "$tmp/conductor" "$DIR/conductor"
-has_login "$DIR/conductor" || { echo "installed $DIR/conductor but it has no 'login'" >&2; exit 1; }
+has_login "$DIR/conductor" || { echo "installed $DIR/conductor but it has no 'create-app'" >&2; exit 1; }
 
 case ":$PATH:" in
   *":$DIR:"*) ;;

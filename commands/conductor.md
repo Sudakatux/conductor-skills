@@ -3,7 +3,7 @@ name: conductor
 description: Conductor command menu — pick a structured action or describe what you want
 ---
 
-**If text follows `/conductor`** (e.g. `/conductor build a workflow that checks the weather`, or a pasted Launch Pad prompt), it is a task, not a menu request: run the connect preflight in the `conductor` skill ([SKILL.md](../skills/conductor/SKILL.md) Rule 15 — resolve the CLI, pick the server the prompt names, `conductor login` if there is no working profile), then do the task. Don't show the menu.
+**If text follows `/conductor`** (e.g. `/conductor build a workflow that checks the weather`, or a pasted Launch Pad prompt), it is a task, not a menu request: run the connect preflight in the `conductor` skill ([SKILL.md](../skills/conductor/SKILL.md) Rule 15 — resolve the CLI, pick the server the prompt names, `conductor create-app` if there is no working profile), then do the task. Don't show the menu.
 
 Otherwise the user invoked `/conductor` without a sub-action. Show the four structured subcommands and ask what they want to do.
 

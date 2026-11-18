@@ -1055,7 +1055,7 @@ try {
     Write-Host "GET STARTED" -ForegroundColor White
     Write-Host '  Ask your agent:'
     Write-Host ""
-    Write-Host '    "Connect me to Conductor with conductor login.'
+    Write-Host '    "Connect me to Conductor with conductor create-app.'
     Write-Host '     Use Developer Edition unless I give you another server URL."'
     Write-Host ""
     Write-Host "  [default] developer  https://developer.orkescloud.com/" -ForegroundColor White

@@ -68,7 +68,7 @@ Auth: env vars as above, or `--profile <name>` to reuse a `conductor config save
 | List / get integrations (secrets masked) | `python3 "$CONDUCTOR_API" integration-list --category AI_MODEL` · `integration-get --name {name}` |
 | Link where the user adds a missing integration | `python3 "$CONDUCTOR_API" integration-add-url --type anthropic` (open it in the user's browser) |
 | Wait until an integration + model is usable by this application | `python3 "$CONDUCTOR_API" integration-wait --type anthropic --model {id} [--timeout 300 --interval 5]` (exit 3 not yet, 4 forbidden) |
-| Create / update an integration (admin / CI identity only; 403 for `coding-agent`) | `python3 "$CONDUCTOR_API" integration-save --name {name} --type openai --config-env api_key=OPENAI_API_KEY` |
+| Create / update an integration (only when the key is already in the environment, e.g. CI; interactive users run `conductor integration add`) | `python3 "$CONDUCTOR_API" integration-save --name {name} --type openai --config-env api_key=OPENAI_API_KEY` |
 | Delete an integration | `python3 "$CONDUCTOR_API" integration-delete --name {name}` |
 | List / add / remove models | `python3 "$CONDUCTOR_API" model-list --provider {name}` · `model-save --provider {name} --model {id}` · `model-delete --provider {name} --model {id}` |
 | Register every model the key can use (live from the provider's API) | `python3 "$CONDUCTOR_API" model-sync --provider {name} --type openai --key-env OPENAI_API_KEY [--dry-run] [--include RE] [--exclude RE]` · list only: `provider-models --type openai --key-env OPENAI_API_KEY` |

@@ -1302,7 +1302,7 @@ main() {
     echo "  Ask your agent:"
   fi
   echo ""
-  echo '    "Connect me to Conductor with conductor login.'
+  echo '    "Connect me to Conductor with conductor create-app.'
   echo '     Use Developer Edition unless I give you another server URL."'
   echo ""
   echo -e "  ${BOLD}[default] developer${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"

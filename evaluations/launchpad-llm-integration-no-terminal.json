@@ -3,18 +3,18 @@
   "skills": [
     "conductor"
   ],
-  "query": "Build a workflow on https://acme.orkesconductor.com that classifies support tickets with GPT. (Context: you are running as a cloud/web agent; the user has no terminal on this machine, only a browser. Profile `acme` exists for the coding-agent application; `integration-list --category AI_MODEL` returns [].)",
+  "query": "Build a workflow on https://acme.orkesconductor.com that classifies support tickets with GPT. (Context: you are running as a cloud/web agent; the user has no terminal on this machine, only a browser. Profile `acme` exists for the default_app application; `integration-list --category AI_MODEL` returns [].)",
   "expected_behavior": [
     "Step 1: Check integration-list → nothing usable; provider OpenAI, current model id from OpenAI's models page",
     "Step 2: Recognize `conductor integration add` needs a terminal on the machine holding the profile, which the user doesn't have here",
     "Step 3: Build the link with `integration-add-url --type openai` (from the profile's server) and give it to the user (opening a browser on the cloud machine is pointless: print it)",
-    "Step 4: Tell the user to add their OpenAI key there, add the model, and share the integration with the coding-agent application (Access Control → Applications → coding-agent → Integration), then say done",
+    "Step 4: Tell the user to add their OpenAI key there, add the model, and share the integration with the default_app application (Access Control → Applications → default_app → Integration), then say done",
     "Step 5: `integration-wait --type openai --model <id>`, then continue the task with the returned integration name"
   ],
   "success_criteria": [
     "Does not ask the user to run `conductor integration add` (no terminal on this machine)",
     "Gives the add-integration link for https://acme.orkesconductor.com with type=openai, not localhost",
-    "Includes the add-model and share-with-coding-agent steps",
+    "Includes the add-model and share-with-default_app steps",
     "Never asks for the OpenAI key in chat",
     "Waits with integration-wait (or equivalent polling) and then continues the original task"
   ]

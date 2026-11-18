@@ -3,11 +3,13 @@
 Connect the agent to a Conductor server. Run the preflight once per session,
 before the first command that talks to a server (SKILL.md Rule 15).
 
-## Connect with `conductor login`
+## Connect with `conductor create-app`
 
-`conductor login` signs the user in from their browser and saves a CLI profile.
-No key or secret is typed, pasted or printed, so **the agent runs it**; the
-user only signs in and clicks **Approve**.
+`conductor create-app` has the user sign in from their browser, creates (or
+reuses) an application — `default_app` unless `--name <app>` says otherwise —
+with an access key, and saves that key as a CLI profile. No key or secret is
+typed, pasted or printed, so **the agent runs it**; the user only signs in and
+clicks **Approve**.
 
 ### 1. Resolve the CLI
 
@@ -17,7 +19,7 @@ sh <skill-dir>/scripts/ensure-cli.sh          # Windows: powershell -File <skill
 
 - Prints `CONDUCTOR_BIN=<path>` → use that full path for every later
   `conductor` command (`~/.local/bin` is often not on the agent's PATH).
-- Exit 3 → no CLI, or one too old to have `login`. Ask once (Rule 3), then
+- Exit 3 → no CLI, or one too old to have `create-app`. Ask once (Rule 3), then
   `sh <skill-dir>/scripts/ensure-cli.sh --install`. It downloads the pinned
   release from GitHub, verifies its sha256 and installs to `~/.local/bin`
   (`%LOCALAPPDATA%\Programs\conductor` on Windows). No sudo, no Node, no shell
@@ -45,21 +47,22 @@ Never fall back to `developer` silently: when you use it by default, say
 
 Success → skip to the task. A 401/403 or "Profile doesn't exist" → step 4.
 
-### 4. Log in
+### 4. Create the application key
 
 Tell the user: *"Opening your browser to connect to acme.orkesconductor.com —
 sign in and click **Approve**."* Then run, with a long timeout (it waits up to
 5 minutes):
 
 ```bash
-"$CONDUCTOR_BIN" login --server https://acme.orkesconductor.com --profile acme
+"$CONDUCTOR_BIN" create-app --server https://acme.orkesconductor.com --profile acme
+# another application name: --name billing-agent   (default: default_app)
 # replacing a broken profile non-interactively: add --yes
 ```
 
 What happens: the CLI listens on `127.0.0.1`, opens
-`https://acme.orkesconductor.com/?setup=cli&port=…&state=…`, the user signs in
-and approves, the Launch Pad creates an access key for the `coding-agent`
-application and hands it to the CLI, which saves
+`https://acme.orkesconductor.com/?setup=cli&port=…&state=…&app=default_app`, the
+user signs in and approves, the Launch Pad finds or creates that application
+(roles `METADATA_MANAGER` + `WORKER`), creates an access key and hands it to the CLI, which saves
 `~/.conductor-cli/config-acme.yaml` and checks the key. Output ends with
 `✓ Saved profile "acme"`.
 
@@ -75,7 +78,7 @@ complete".
 
 ### When the browser can't reach the CLI
 
-`login` times out when the browser runs on another machine (SSH, a container,
+`create-app` times out when the browser runs on another machine (SSH, a container,
 a cloud agent) or the page can't post back. It prints a fallback: open
 `https://<server>/?setup=key`, then the user runs, **in their own terminal**:
 
@@ -87,13 +90,13 @@ and enters the server URL (`…/api`), `Enterprise`, `1` (API Key + Secret), and
 the key id and secret the page shows. Never ask for those values in chat, never
 read the clipboard or the profile YAML. If the server has no Launch Pad
 approval page, the user creates the key under **Access Control → Applications**
-instead (application `coding-agent`, roles `METADATA_MANAGER` + `WORKER`).
+instead (application `default_app`, roles `METADATA_MANAGER` + `WORKER`).
 
 A pasted secret is compromised: follow SKILL.md Rule 5.
 
 ## Local server (OSS)
 
-A local OSS server needs no login:
+A local OSS server needs no access key:
 
 ```bash
 "$CONDUCTOR_BIN" server start
@@ -107,25 +110,25 @@ Use `--profile localhost` only when the user asks for local.
 
 Profiles live in `~/.conductor-cli/config-<profile>.yaml` and may hold
 credentials: discover them with `conductor config list`, never by reading the
-files. Add another server any time with `conductor login --server <url>`.
+files. Add another server any time with `conductor create-app --server <url>`.
 
 The Python fallback script (`scripts/conductor_api.py`) does **not** support
-`login`; it reads a profile via `--profile <name>` (internally, never printed)
+`create-app`; it reads a profile via `--profile <name>` (internally, never printed)
 or `CONDUCTOR_SERVER_URL` plus injected credentials.
 
 **Fallback** — only when the CLI cannot be installed at all (see SKILL.md
 Rule 3): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`
 and see [fallback-cli.md](fallback-cli.md).
 
-## Without login: an explicit URL or environment variables (CI)
+## Without `create-app`: an explicit URL or environment variables (CI)
 
 For CI, containers and servers that already have credentials injected. Interactive
-users on Orkes should use [`conductor login`](#connect-with-conductor-login).
+users on Orkes should use [`conductor create-app`](#connect-with-conductor-create-app).
 
 ### Choose and normalize a server
 
 If the user already supplied a server URL or selected a profile, use it
-immediately. For an interactive first-time setup, use [`conductor login`](#connect-with-conductor-login). Otherwise ask the user:
+immediately. For an interactive first-time setup, use [`conductor create-app`](#connect-with-conductor-create-app). Otherwise ask the user:
 
 - **Option A** — Start a local server (good for development/testing).
 - **Option B** — Connect to an existing remote server.
@@ -235,7 +238,7 @@ Then continue with [agents.md](agents.md) and [agent-sdks.md](agent-sdks.md).
 
 ## Additional named profiles (manual)
 
-Prefer `conductor login --server <url> --profile <name>`. The manual form:
+Prefer `conductor create-app --server <url> --profile <name>`. The manual form:
 
 The current CLI saves profiles interactively. This is deliberate: putting
 `--auth-key` or `--auth-secret` values in a command would expose them in shell
