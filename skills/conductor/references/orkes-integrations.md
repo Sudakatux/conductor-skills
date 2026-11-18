@@ -43,37 +43,51 @@ provider key, so the **user** types it.
    …; `integration-defs --category AI_MODEL` lists them). Pick the model id as in
    §3 (current, from the provider's models page — not from memory).
 
-2. **Ask the user to run the CLI in their own terminal** (default). Use the
-   full `CONDUCTOR_BIN` path `ensure-cli.sh` printed and the session's profile:
+2. **Give the user the exact command, then stop and wait.** This message is
+   the one thing the user must act on, so it must contain the **complete,
+   copy-pasteable command** in its own fenced code block — never "run the
+   integration add command", never "the command above", never placeholders.
+   Fill in every value: the absolute `CONDUCTOR_BIN` path `ensure-cli.sh`
+   printed, the session's profile, the type and the exact model id. Send it
+   as plain text in your reply (not only inside a tool call, a summary or a
+   sub-agent's message), like this:
 
-   ```bash
-   /Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model claude-sonnet-4-6
-   ```
+   > I need an Anthropic integration on acme before I can build this. In a
+   > terminal of your own (not here), run:
+   >
+   > ```bash
+   > /Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model claude-sonnet-4-6
+   > ```
+   >
+   > It asks for your Anthropic API key without showing it, checks the key,
+   > creates the integration and adds claude-sonnet-4-6. Reply **done** when
+   > it prints ✓ (or paste its error).
 
-   Say, in one message: *"In a terminal of your own (not here), run the command
-   above. It asks for your **Anthropic** API key without showing it, checks the
-   key, creates the integration and adds **claude-sonnet-4-6**. Tell me **done**
-   when it prints ✓."* Notes:
+   Notes:
    - Never run it yourself: it needs the user's terminal (it refuses without
      one), and the key must not pass through you.
    - Other types use the same command; it asks for each field the server
      defines (Bedrock connection type, region, role ARN; Vertex service-account
-     file path; Azure endpoint). Non-secret values may be preset with
-     `--set field=value`; secrets are refused there.
-   - The application owns what it creates. Add `--share-with <their email>` if
-     the user wants to see and manage it in the UI.
+     file path; Azure endpoint). Preset known non-secret values in the command
+     with `--set field=value` so the user types less; secrets are refused there.
+   - The application owns what it creates. Add `--share-with <their email>`
+     only when you know it and the user wants to see it in the UI.
 
-3. **Wait for it**, then carry on with the original task:
+3. **End your turn and wait for the user.** Don't start a background poll and
+   carry on, and don't build the workflow meanwhile — it depends on the
+   integration's name and the user may need help with the command. When they
+   reply **done** (or paste output), confirm:
 
    ```bash
-   python3 "$CONDUCTOR_API" --profile <p> integration-wait --type anthropic --model claude-sonnet-4-6
-   # checks every 5 s for up to 5 min; --timeout / --interval to change
+   python3 "$CONDUCTOR_API" --profile <p> integration-wait --type anthropic --model claude-sonnet-4-6 --timeout 30
    ```
 
    - `{"ready": true, "llmProvider": "<name>", "model": "<id>"}` → use those
-     names and continue.
-   - Exit 3 (`ready: false`) → read `next` and the user's output; when they
-     say **done**, run it again.
+     names and carry on with the original task.
+   - Exit 3 (`ready: false`) → read `next` and any output they pasted, say
+     what's missing in one line, repeat the exact command (or the fix), and
+     wait again.
+   - Their output shows HTTP 403 → step 4.
 
 4. **Fall back to the browser page** when the user has no terminal on the
    machine that holds the profile (a cloud or web agent, a remote container),
@@ -93,7 +107,9 @@ provider key, so the **user** types it.
    - *"Then share the integration with the **default_app** application: **Access Control → Applications → default_app → Integration** tab, and turn on that model."* <!-- share-step: drop once the integrations page shares with the calling application itself -->
    - *"Tell me **done** when you've finished."*
 
-   Then wait as in step 3.
+   Give the full link as plain text in that message (it opens in their
+   browser, but they may need it again), then end your turn and wait as in
+   step 3.
 
 5. **Stop** when neither works — `integration-wait` exits 4, or the user can't
    create integrations in the UI either (no **New Integration** button, a

@@ -8,17 +8,17 @@
     "Step 1: Use profile `acme`; recognize Orkes, where LLM providers are integrations (Rule 16)",
     "Step 2: `python3 \"$CONDUCTOR_API\" --profile acme integration-list --category AI_MODEL` → nothing usable",
     "Step 3: Provider is Anthropic (from 'Claude'); pick a current model id from Anthropic's models page (WebSearch/WebFetch), e.g. claude-sonnet-4-6 — not from memory",
-    "Step 4: Ask the user to run, in a terminal of their own: `/Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model <id>` — explaining it asks for the key with a hidden prompt, checks it, creates the integration and adds the model; optionally `--share-with <email>` to see it in the UI",
+    "Step 4: Reply with the exact command in its own code block, fully filled in — `/Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model <id>` — for the user to run in a terminal of their own, explaining it asks for the key with a hidden prompt, checks it, creates the integration and adds the model; ask them to reply done",
     "Step 5: Do not run that command itself, do not ask for the Anthropic key, and do not tell the user to export it",
-    "Step 6: `integration-wait --type anthropic --model <id>`; rerun when the user says done",
+    "Step 6: End the turn and wait for the user (no background poll, no building the workflow meanwhile); when they reply done, confirm with `integration-wait --type anthropic --model <id> --timeout 30`; if not ready, say what's missing, repeat the exact command and wait again",
     "Step 7: With the returned `llmProvider` name, save a prompt template (Rule 18), write the LLM_CHAT_COMPLETE workflow to a file, register it and run a verification execution",
     "Step 8: Mention the fallback: if the command reports HTTP 403 (re-run `conductor create-app` + Approve) or the user prefers the UI, open the add-integration page instead"
   ],
   "success_criteria": [
     "Checks integration-list (and model-list if something is visible) before acting",
-    "Gives the user the exact `conductor ... --profile acme integration add --type anthropic --model <id>` command, using the full CONDUCTOR_BIN path, to run in their own terminal",
+    "The reply shows the complete copy-pasteable command in a code block — absolute CONDUCTOR_BIN path, `--profile acme`, `integration add --type anthropic --model <exact id>` — with no placeholders; merely telling the user to 'run the integration add command' fails this criterion",
     "Never runs `integration add` itself, never asks for or accepts the Anthropic key in chat, and never suggests exporting it for the agent",
-    "Polls with integration-wait (or repeated integration-list/model-list) and accepts 'done' to check again",
+    "Ends the turn after giving the command and waits for the user's 'done' before continuing (no background polling while building the workflow); then confirms with integration-wait",
     "Continues the original task afterwards using the integration NAME returned, not assuming the type 'anthropic'",
     "Names the browser add-integration page as the fallback for HTTP 403 / no terminal, built from the profile's server, not localhost",
     "Does not fall back to an HTTP task calling api.anthropic.com"
