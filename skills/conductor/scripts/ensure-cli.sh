@@ -14,13 +14,13 @@ set -eu
 # Pinned release. Bump all three together. sha256 values are GitHub's per-asset
 # digests (gh api repos/<repo>/releases/tags/<tag> -q '.assets[]|.name+" "+.digest').
 CLI_REPO="Sudakatux/conductor-cli"   # FORK ONLY: conductor-oss/conductor-cli once `create-app` ships
-CLI_VERSION="v0.1.10-createapp.1"
+CLI_VERSION="v0.1.10-createapp.2"
 sha_for() {
   case "$1" in
-    conductor_darwin_amd64) echo cbbf992bf1afe3b02972052339fa906e0da12e412f693679da9dac1680c23a71 ;;
-    conductor_darwin_arm64) echo a45a77a2e83a7be8ad1fdc452446cfb96f439dac6d4a2d3f0fc1a5ed64afed4b ;;
-    conductor_linux_amd64)  echo 9b9af7c15353507554c7c60d566c977fbb97437d4d18fd8522f6a24d854c3d41 ;;
-    conductor_linux_arm64)  echo 2eaf043df724258a9f92a466e87021fa6e6f28e842cdb38d6d8deb027149bac8 ;;
+    conductor_darwin_amd64) echo 1a224209bbba0c67c3e7fe8b9b7753c08d59cea1096d4baa36a7929dd069af55 ;;
+    conductor_darwin_arm64) echo c739fd61e89ba73e645c88674bc4b9af532c7c26c151ae3f6c5612ad9ed5c36b ;;
+    conductor_linux_amd64)  echo fda5ac1563cc7bd995938569069faae2d46eeaefc9b7ac7302c96da771bb1cfc ;;
+    conductor_linux_arm64)  echo d7ba2a280d988d1f806cd776b163294ea174e0d14d663708edab01a05afe16dc ;;
     *) echo "" ;;
   esac
 }

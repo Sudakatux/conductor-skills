@@ -11,10 +11,10 @@ $ErrorActionPreference = 'Stop'
 
 # Pinned release; keep in step with ensure-cli.sh.
 $CliRepo = 'Sudakatux/conductor-cli'   # FORK ONLY: conductor-oss/conductor-cli once `create-app` ships
-$CliVersion = 'v0.1.10-createapp.1'
+$CliVersion = 'v0.1.10-createapp.2'
 $Sha = @{
-    'conductor_windows_amd64.exe' = '6c33da39d20328a49f0dd8af008d82c8a423e0b27b35d16eca79d0802416103b'
-    'conductor_windows_arm64.exe' = 'ab473bb709b1685fc91986d89407bd1ab8bcd77f11237db95d7f32d1e2ba5c77'
+    'conductor_windows_amd64.exe' = '1f9d8e174c3b59b4a370097ebb0ec88e95f3eacfc315c0d0f777574d772610f7'
+    'conductor_windows_arm64.exe' = '385ab01ac74516994fc13b3e29a6b631074b041185c3f0adcf002f933ad16918'
 }
 
 $Dir = if ($env:CONDUCTOR_CLI_DIR) { $env:CONDUCTOR_CLI_DIR } else { Join-Path $env:LOCALAPPDATA 'Programs\conductor' }
