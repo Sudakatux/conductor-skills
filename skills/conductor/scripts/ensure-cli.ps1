@@ -1,4 +1,4 @@
-# Find a conductor CLI that has `conductor login`, or install the pinned release.
+# Find a conductor CLI that has `login` and `integration`, or install the pinned release.
 #
 #   powershell -File ensure-cli.ps1            # check only; exit 3 when missing
 #   powershell -File ensure-cli.ps1 -Install   # download, verify sha256, install
@@ -11,10 +11,10 @@ $ErrorActionPreference = 'Stop'
 
 # Pinned release; keep in step with ensure-cli.sh.
 $CliRepo = 'Sudakatux/conductor-cli'   # FORK ONLY: conductor-oss/conductor-cli once `login` ships
-$CliVersion = 'v0.1.10-login.1'
+$CliVersion = 'v0.1.10-login.2'
 $Sha = @{
-    'conductor_windows_amd64.exe' = '6de5c58e5b359c482efd07cf10fc926ea0d6954ac87766d0dfd31b1b0e5f7a54'
-    'conductor_windows_arm64.exe' = '62973ea5f5d1d1099175ea3249b745349adcfb681d315f70362c50cfe4323285'
+    'conductor_windows_amd64.exe' = '80239bf1fadcd82e37acdc64a47dbd72464b4974347b860dc2c4c65dcf772280'
+    'conductor_windows_arm64.exe' = '16fd50554be9b86a59d2e1c679791f2858907886a3b3c5756d4b9e2c218b6898'
 }
 
 $Dir = if ($env:CONDUCTOR_CLI_DIR) { $env:CONDUCTOR_CLI_DIR } else { Join-Path $env:LOCALAPPDATA 'Programs\conductor' }
@@ -23,6 +23,8 @@ $Target = Join-Path $Dir 'conductor.exe'
 function Test-Login([string]$Path) {
     if (-not $Path -or -not (Test-Path $Path)) { return $false }
     & $Path login --help *> $null
+    if ($LASTEXITCODE -ne 0) { return $false }
+    & $Path integration add --help *> $null
     return $LASTEXITCODE -eq 0
 }
 
@@ -31,7 +33,7 @@ if (Test-Login $onPath) { "CONDUCTOR_BIN=$onPath"; exit 0 }
 if (Test-Login $Target) { "CONDUCTOR_BIN=$Target"; exit 0 }
 
 if (-not $Install) {
-    if ($onPath) { [Console]::Error.WriteLine("MISSING: $onPath has no 'login' command (too old).") }
+    if ($onPath) { [Console]::Error.WriteLine("MISSING: $onPath lacks 'login' or 'integration' (too old).") }
     else { [Console]::Error.WriteLine('MISSING: no conductor CLI found.') }
     [Console]::Error.WriteLine("Ask the user, then run: powershell -File `"$PSCommandPath`" -Install  (installs $CliVersion to $Dir)")
     exit 3
