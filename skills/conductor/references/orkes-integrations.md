@@ -89,27 +89,23 @@ provider key, so the **user** types it.
      wait again.
    - Their output shows HTTP 403 → step 4.
 
-4. **Fall back to the browser page** when the user has no terminal on the
-   machine that holds the profile (a cloud or web agent, a remote container),
-   prefers the UI, or `integration add` reports **HTTP 403** (the application
-   lacks the role — e.g. it was approved before the role change: re-running
-   `conductor create-app` and **Approve** fixes that; otherwise use the page):
+4. **Fall back to manual steps in the UI** when the user has no terminal on
+   the machine that holds the profile (a cloud or web agent, a remote
+   container), prefers the UI, or `integration add` reports **HTTP 403** (the
+   application lacks the role — e.g. it was approved before the role change:
+   re-running `conductor create-app` and **Approve** fixes that; otherwise use
+   the UI). Don't generate or guess a link to a UI page — describe the steps in
+   words, naming the cluster the profile points to (e.g.
+   acme.orkesconductor.com) and the profile's application:
 
-   ```bash
-   URL=$(python3 "$CONDUCTOR_API" --profile <p> integration-add-url --type anthropic)
-   open "$URL"        # Linux: xdg-open "$URL"   Windows: start "" "$URL"   No browser: print it
-   ```
+   > In the Conductor UI on **acme.orkesconductor.com**:
+   > 1. Go to **Integrations → New Integration → Anthropic**, enter your API key and save.
+   > 2. Open that integration and **Add Model** → **claude-sonnet-4-6**.
+   > 3. Share it with the **default_app** application: **Access Control → Applications → default_app → Integration** tab, and turn on that model. <!-- share-step: drop once the integrations page shares with the calling application itself -->
+   >
+   > Reply **done** when you've finished.
 
-   e.g. `https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic`
-   (built from the profile's server, never localhost). Tell the user:
-   - *"In the tab that just opened, add your **Anthropic** API key and save the integration."*
-   - *"Then add the model **claude-sonnet-4-6** to it (**Add Model**)."*
-   - *"Then share the integration with the **default_app** application: **Access Control → Applications → default_app → Integration** tab, and turn on that model."* <!-- share-step: drop once the integrations page shares with the calling application itself -->
-   - *"Tell me **done** when you've finished."*
-
-   Give the full link as plain text in that message (it opens in their
-   browser, but they may need it again), then end your turn and wait as in
-   step 3.
+   Then end your turn and wait as in step 3.
 
 5. **Stop** when neither works — `integration-wait` exits 4, or the user can't
    create integrations in the UI either (no **New Integration** button, a
@@ -179,7 +175,7 @@ Single model: `python3 "$CONDUCTOR_API" model-save --provider openai-prod --mode
 
 ## 4. Grant access
 
-- The identity that **created** the integration gets full access automatically. With `conductor integration add` (§2) that is the profile's application (`default_app` unless `conductor create-app --name` chose another), so its workflows can use it at once; the user sees it in the UI only if it was shared back (`--share-with`) or they are an admin. When the user creates it in the UI (§2 step 4), the user owns it, so it must be **shared** with the application: **Access Control → Applications → default_app → Integration** tab, toggle the models. <!-- share-step -->
+- The identity that **created** the integration gets full access automatically. With `conductor integration add` (§2) that is the profile's application (`default_app` unless `conductor create-app --name` chose another), so its workflows can use it at once; the user sees it in the UI only if it was shared back (`--share-with`) or they are an admin. When the user creates it in the UI (§2 step 4, manual steps), the user owns it, so it must be **shared** with the application: **Access Control → Applications → default_app → Integration** tab, toggle the models. <!-- share-step -->
 - Other groups / roles / users: `python3 "$CONDUCTOR_API" grant-access --subject-type group --subject-id <group> --target-id openai-prod --access READ,EXECUTE` (`--target-type` defaults to `INTEGRATION_PROVIDER`).
 - Don't guess an API subject id for an application; share it in the UI and confirm with `integration-wait` (it only succeeds once the application can see the model).
 - Check: `python3 "$CONDUCTOR_API" access-list --target-id openai-prod`.
@@ -255,8 +251,8 @@ OSS has no prompt registry: prompts are always literal text and `prompt-*` comma
 | *"Prompt … is not associated with integration … and model …"* | Literal text in `instructions` / `promptName` / image `prompt` without `allowRawPrompts`, or the template isn't associated with that `integration:model` | Use a template name and `prompt-save … --model <integration>:<model>`, or set `allowRawPrompts: true` (§6) |
 | Registration fails: *"taskReferenceName: x … is not defined"* for prompt text | `${x}` template placeholder written inline in the workflow | Move the text into a saved template, or use a real expression (§6) |
 | `integration-list` returns 403 / `integration-wait` exits 4 | This application can't list integrations | Stop: ask an admin to create and share the integration (§2 step 5) |
-| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | Re-run `conductor create-app` → **Approve**, or use the browser page (§2 step 4) |
-| `integration-save` returns 403 | This identity can't create integrations | §2: `conductor integration add` in the user's terminal, or the browser page |
+| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | Re-run `conductor create-app` → **Approve**, or the manual UI steps (§2 step 4) |
+| `integration-save` returns 403 | This identity can't create integrations | §2: `conductor integration add` in the user's terminal, or the manual UI steps |
 | `integration-save`: "already exists" | Name taken | Use it (add models with `model-save`), or, with admin/CI credentials, `--overwrite` with all secrets re-supplied |
 | A `*-env` flag says the variable isn't set | Shell expanded `$VAR` into a value, or the variable isn't exported | Pass the bare name; ask the user to export it |
 

@@ -650,22 +650,6 @@ def handle_model_list(args):
     output(redact(request_json(url, token)))
 
 
-def ui_root(base):
-    """The UI root for an API base: https://acme.example/api -> https://acme.example."""
-    return base[:-len("/api")] if base.endswith("/api") else base
-
-
-def integration_add_url(base, itype, search=None):
-    """The UI page where a signed-in user adds an integration of this type."""
-    params = {"search": search or itype[:3], "view": "connections-and-resources", "type": itype}
-    return f"{ui_root(base)}/integrations/addIntegration?{urllib.parse.urlencode(params)}"
-
-
-def handle_integration_add_url(args):
-    require_enterprise()
-    print(integration_add_url(get_base_url(), args.type, args.search))
-
-
 def try_json(url, token):
     """GET without exiting: (status, data). While polling, 403/404 are answers, not errors."""
     headers = {"Accept": "application/json"}
@@ -720,7 +704,6 @@ def handle_integration_wait(args):
         "type": args.type,
         "model": args.model,
         "visibleIntegrations": names,
-        "addUrl": integration_add_url(base, args.type),
         "next": ("visible but missing the model: add it, or share it with this application"
                  if names else "no integration of this type is shared with this application yet"),
     })
@@ -1106,10 +1089,6 @@ def main():
     p = sub.add_parser("integration-delete", help="Orkes: delete an integration provider")
     p.add_argument("--name", required=True)
 
-    p = sub.add_parser("integration-add-url", help="Orkes: the UI link where the user adds an integration of a type")
-    p.add_argument("--type", required=True, help="integration type, e.g. anthropic, openai")
-    p.add_argument("--search", default=None, help="search box prefix (default: first 3 letters of the type)")
-
     p = sub.add_parser("integration-wait", help="Orkes: wait until an integration of a type (with a model) is usable by this application")
     p.add_argument("--type", required=True, help="integration type, e.g. anthropic")
     p.add_argument("--model", default=None, help="exact model id that must be registered and enabled")
@@ -1233,7 +1212,6 @@ def main():
         "integration-get": handle_integration_get,
         "integration-save": handle_integration_save,
         "integration-delete": handle_integration_delete,
-        "integration-add-url": handle_integration_add_url,
         "integration-wait": handle_integration_wait,
         "model-list": handle_model_list,
         "model-save": handle_model_save,

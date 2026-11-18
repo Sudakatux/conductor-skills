@@ -133,4 +133,4 @@ See [orkes.md](orkes.md) for `secret` and `webhook` commands. AI provider integr
 | List integrations this profile can see | `conductor integration list [--category AI_MODEL] [--json]` |
 | Models registered / offered by the key | `conductor integration models {name}` · `conductor integration models {name} --available` |
 | Add models to an integration | `conductor integration add-model {name} --model {id}` |
-| Wait until usable, add-integration link, access grants | bundled script: `integration-wait`, `integration-add-url`, `grant-access` |
+| Wait until usable, access grants | bundled script: `integration-wait`, `grant-access` |

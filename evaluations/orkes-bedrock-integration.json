@@ -10,7 +10,7 @@
     "Step 3: Recognize Bedrock has no model-list API usable with this script (`model-sync` does not cover it), so look the current Anthropic-on-Bedrock model ids up online with WebSearch / WebFetch of the official Bedrock supported-models page",
     "Step 4: Show the list, then `model-save --provider <name> --model <bedrock model id>` for each; note the models must also be enabled for the account in that region",
     "Step 5: Use the integration name as `llmProvider` with one of the registered ids, and verify with a test run",
-    "Step 6: If `integration-save` returns 403 (this identity can't create integrations), switch to `conductor integration add --type <type> --model <id>` in the user's own terminal (hidden prompts; never run by the agent), or, without a terminal, the browser route: open the server's add-integration page in the user's browser (`integration-add-url --type aws_bedrock_anthropic`, built from the profile's server URL, not localhost), tell the user to add their Bedrock (IAM role) key there, add the model <model id> and share the integration with the application (Access Control → Applications → <app> → Integration tab), then poll with `integration-wait --type aws_bedrock_anthropic --model <model id>` (rerun when the user says done); the role ARN and external ID are entered in the UI, never in chat"
+    "Step 6: If `integration-save` returns 403 (this identity can't create integrations), switch to `conductor integration add --type aws_bedrock_anthropic --model <id>` in the user's own terminal (role ARN, external ID etc. entered at its prompts; never run by the agent), or, without a terminal, give manual UI steps in words, with no generated link: Integrations → New Integration → Amazon Bedrock (Anthropic), enter the key and save, Add Model → <model id>, share it with the profile's application (Access Control → Applications → <app> → Integration tab), reply done; then end the turn and confirm with `integration-wait --type aws_bedrock_anthropic --model <model id>` when the user says done; values never typed into chat"
   ],
   "success_criteria": [
     "Checks existing AI integrations before creating one",
@@ -19,6 +19,6 @@
     "Registers each found model with `model-save` (or the equivalent REST call), not `model-sync` against a provider list API that Bedrock doesn't offer",
     "Notes that the models must be enabled (model access) in the AWS account and region",
     "Uses the integration name as `llmProvider` in any workflow example and does not fall back to an HTTP task to bedrock-runtime",
-    "On a 403 from `integration-save`, falls back to `conductor integration add --type aws_bedrock_anthropic` in the user's own terminal (role ARN etc. entered at its prompts) or the add-integration page (`integration-add-url`), then `integration-wait` instead of retrying or asking for values in chat"
+    "On a 403 from `integration-save`, falls back to `conductor integration add --type aws_bedrock_anthropic` in the user's own terminal or to manual UI steps in words (no generated URL), then `integration-wait` — instead of retrying or asking for values in chat"
   ]
 }

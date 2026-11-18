@@ -78,19 +78,6 @@ def test_partial_key_pair_fails(monkeypatch) -> None:
         conductor_api.get_config()
 
 
-@pytest.mark.parametrize(
-    ("base", "expected"),
-    [
-        ("https://acme.orkesconductor.com/api",
-         "https://acme.orkesconductor.com/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic"),
-        ("https://example.com/custom/conductor",
-         "https://example.com/custom/conductor/integrations/addIntegration?search=ant&view=connections-and-resources&type=anthropic"),
-    ],
-)
-def test_integration_add_url(base: str, expected: str) -> None:
-    assert conductor_api.integration_add_url(base, "anthropic") == expected
-
-
 def _fake_fetch(responses):
     def fetch(url, token):
         for suffix, answer in responses.items():
