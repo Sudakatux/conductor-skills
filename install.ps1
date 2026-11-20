@@ -119,7 +119,6 @@ $SKILL_FILES = @(
     "skills/conductor/scripts/ensure-cli.ps1"
     "skills/conductor/scripts/conductor_api.py"
     "skills/conductor/scripts/test_conductor_api.py"
-    "skills/conductor/scripts/test_ensure_cli.py"
 )
 
 $VALID_AGENTS = @("claude","codex","gemini","cursor","windsurf","cline","aider","copilot","amazonq","opencode","roo","amp")
