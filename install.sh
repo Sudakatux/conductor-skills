@@ -110,6 +110,7 @@ SKILL_FILES=(
   "skills/conductor/scripts/ensure-cli.ps1"
   "skills/conductor/scripts/conductor_api.py"
   "skills/conductor/scripts/test_conductor_api.py"
+  "skills/conductor/scripts/test_ensure_cli.py"
 )
 
 # Colors (if terminal supports them)

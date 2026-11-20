@@ -3,12 +3,15 @@
 #
 #   sh ensure-cli.sh            # check only; exit 3 when missing
 #   sh ensure-cli.sh --install  # download, verify sha256, install (no sudo, no Node)
+#   sh ensure-cli.sh --add-to-path  # also put the install dir on PATH for new terminals
 #
 # Success prints one line the agent uses for every later command:
 #   CONDUCTOR_BIN=/absolute/path/to/conductor
 #
-# Install dir: $CONDUCTOR_CLI_DIR, else ~/.local/bin. Nothing else is touched:
-# no shell startup files, no global npm, no sudo.
+# Install dir: $CONDUCTOR_CLI_DIR, else ~/.local/bin. No global npm, no sudo.
+# A shell startup file is touched only with --add-to-path (after the user says yes):
+# one marked line in ~/.zshrc, ~/.bash_profile (macOS) / ~/.bashrc, or a fish
+# conf.d file, picked from $SHELL. Never added twice.
 set -eu
 
 # Pinned release. Bump all three together. sha256 values are GitHub's per-asset
@@ -27,10 +30,12 @@ sha_for() {
 
 DIR="${CONDUCTOR_CLI_DIR:-$HOME/.local/bin}"
 INSTALL=0
+ADD_PATH=0
 for arg in "$@"; do
   case "$arg" in
     --install) INSTALL=1 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    --add-to-path) ADD_PATH=1 ;;
+    -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
@@ -39,7 +44,57 @@ done
 # (add an LLM provider with a hidden key prompt). Older ones are "too old".
 has_login() { [ -x "$1" ] && "$1" create-app --help >/dev/null 2>&1 && "$1" integration add --help >/dev/null 2>&1; }
 
-found() { echo "CONDUCTOR_BIN=$1"; exit 0; }
+on_path() { case ":$PATH:" in *":$DIR:"*) return 0 ;; esac; return 1; }
+
+# The startup file the user's login shell reads, from $SHELL (not the shell running this script).
+rc_file() {
+  case "$(basename "${SHELL:-}")" in
+    zsh) echo "${ZDOTDIR:-$HOME}/.zshrc" ;;
+    bash) if [ "$(uname -s)" = Darwin ]; then echo "$HOME/.bash_profile"; else echo "$HOME/.bashrc"; fi ;;
+    fish) echo "${XDG_CONFIG_HOME:-$HOME/.config}/fish/conf.d/conductor-cli.fish" ;;
+    *) echo "" ;;
+  esac
+}
+
+MARK="# Added by conductor-skills: conductor CLI on PATH"
+case "$DIR" in
+  "$HOME"/*) DIR_SHOWN="\$HOME/${DIR#"$HOME"/}"; DIR_TILDE="~/${DIR#"$HOME"/}" ;;
+  *) DIR_SHOWN="$DIR"; DIR_TILDE="$DIR" ;;
+esac
+
+# The user's startup file already mentions $DIR (the agent's own PATH often differs from theirs).
+rc_has_dir() { [ -f "$1" ] && grep -qF -e "$MARK" -e "$DIR_SHOWN" -e "$DIR_TILDE" -e "$DIR" "$1"; }
+
+add_to_path() {
+  rc=$(rc_file)
+  case "$rc" in
+    *.fish) line="fish_add_path \"$DIR_SHOWN\"" ;;
+    *) line="export PATH=\"$DIR_SHOWN:\$PATH\"" ;;
+  esac
+  if [ -z "$rc" ]; then
+    echo "PATH not changed: can't tell which startup file ${SHELL:-your shell} reads. Add this line to it: $line" >&2
+  elif rc_has_dir "$rc"; then
+    echo "$rc already puts $DIR on PATH. New terminals find \`conductor\`; in an open one run: source $rc" >&2
+  else
+    mkdir -p "$(dirname "$rc")"
+    printf '\n%s\n%s\n' "$MARK" "$line" >> "$rc"
+    echo "Added $DIR to PATH in $rc. New terminals find \`conductor\`; in an open one run: source $rc" >&2
+  fi
+}
+
+found() {
+  if [ "$1" = "$DIR/conductor" ] && ! on_path; then
+    if [ "$ADD_PATH" -eq 1 ]; then
+      add_to_path
+    elif rc=$(rc_file) && ! rc_has_dir "$rc"; then
+      echo "Note: $DIR is not on PATH, so \`conductor\` won't work in the user's terminals. Ask the user, then run: sh \"$0\" --add-to-path${rc:+  (adds one line to $rc)}" >&2
+    fi
+  elif [ "$ADD_PATH" -eq 1 ]; then
+    echo "$(dirname "$1") is already on PATH; nothing to change." >&2
+  fi
+  echo "CONDUCTOR_BIN=$1"
+  exit 0
+}
 
 if c=$(command -v conductor 2>/dev/null) && has_login "$c"; then found "$c"; fi
 if has_login "$DIR/conductor"; then found "$DIR/conductor"; fi
@@ -89,9 +144,5 @@ chmod 755 "$tmp/conductor"
 mv "$tmp/conductor" "$DIR/conductor"
 has_login "$DIR/conductor" || { echo "installed $DIR/conductor but it has no 'create-app'" >&2; exit 1; }
 
-case ":$PATH:" in
-  *":$DIR:"*) ;;
-  *) echo "Note: $DIR is not on PATH; use the full path below." >&2 ;;
-esac
 echo "Installed conductor $CLI_VERSION (sha256 verified)." >&2
 found "$DIR/conductor"

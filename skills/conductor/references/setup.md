@@ -24,6 +24,13 @@ sh <skill-dir>/scripts/ensure-cli.sh          # Windows: powershell -File <skill
   release from GitHub, verifies its sha256 and installs to `~/.local/bin`
   (`%LOCALAPPDATA%\Programs\conductor` on Windows). No sudo, no Node, no shell
   startup edits.
+- Stderr says the install dir is not on PATH → ask once whether to add it (Rule 3),
+  naming the startup file it printed. On a yes, `sh <skill-dir>/scripts/ensure-cli.sh --add-to-path`
+  (Windows: `-AddToPath`, user PATH in the registry). It appends one marked
+  `export PATH="$HOME/.local/bin:$PATH"` line to `~/.zshrc`, `~/.bash_profile`
+  (macOS) or `~/.bashrc` (Linux), or writes `~/.config/fish/conf.d/conductor-cli.fish`,
+  picked from `$SHELL`; an unknown shell gets the line printed instead. It never
+  adds it twice. Only new terminals see it, so keep using `CONDUCTOR_BIN`.
 - A checksum mismatch: stop and report it.
 
 ### 2. Pick the server and profile
