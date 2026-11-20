@@ -76,6 +76,20 @@ user signs in and approves, the Launch Pad finds or creates that application
 Continue the original request with `--profile acme`. Don't stop at "setup
 complete".
 
+### When your command is blocked
+
+A permission prompt the user declines, or an auto-mode safety check, can stop
+you from running `create-app` (it creates an access key on the cluster). Don't
+retry it, rephrase it, switch to another way of connecting, or carry on with
+the task. Reply with the exact command, filled in, for the user to run:
+
+```bash
+/Users/me/.local/bin/conductor create-app --server https://acme.orkesconductor.com --profile acme
+```
+
+In Claude Code they can type `! <command>` so it runs in the session. End the
+turn; when they say **done**, continue at step 5 (`whoami`).
+
 ### When the browser can't reach the CLI
 
 `create-app` times out when the browser runs on another machine (SSH, a container,

@@ -26,6 +26,9 @@ These evaluations ensure the Conductor skill:
 ### install-and-connect.json
 Tests first-time setup: resolve the CLI (Rule 3), default to Developer Edition only when no profiles exist and say so, and connect with `conductor create-app` run by the agent, so no key or secret is typed or pasted. `config save` is only the timeout fallback.
 
+### create-app-blocked.json
+Tests what happens when a permission check (Claude Code auto mode) blocks the agent's `create-app` call: no retry or workaround, the exact command handed to the user (with the `!` prefix tip), the turn ended, and `whoami` before continuing once the user says done.
+
 ### local-server-setup.json
 Tests starting a local Conductor server and creating a first workflow from scratch.
 
