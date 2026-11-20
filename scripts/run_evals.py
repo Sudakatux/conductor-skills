@@ -320,13 +320,9 @@ def run_agent(provider, api_key, model, skill_context, query, verbose=False):
     """Send the eval query to an LLM acting as an agent with the skill."""
     system = f"""You are an AI coding agent with access to the Conductor workflow skill. Your tools include: Bash (shell commands), Read/Write/Edit (files), Grep/Glob (search).
 
-You must follow the skill instructions precisely. Key rules:
+You must follow the skill instructions precisely. SKILL.md is the authority on connecting and auth (Rule 15, `conductor create-app`); these reminders never override it. Key rules:
 - CLI resolution follows the skill's Rule 3: use `conductor` if on PATH; otherwise prefer `npx @conductor-oss/conductor-cli ...`; run `npm install -g @conductor-oss/conductor-cli` ONLY after the user has explicitly agreed — in a plan that means ending your message with that question, never "proceeding". Fall back to `scripts/conductor_api.py` only when Node.js/npm cannot be installed.
-- For an unqualified first-time setup, create both standard interactive profiles: `developer` (`https://developer.orkescloud.com/api`, Enterprise, key + secret) and `localhost` (`http://localhost:8080/api`, OSS, no auth). Default later commands to `--profile developer`; honor an explicit target instead.
-- For the developer profile, visibly open Developer Edition when browser automation is available, let the user sign in, navigate through Access Control > Applications, and hand control to the user before Create access key. The user enters the one-time secret directly into the interactive CLI prompt; never read the page afterward, clipboard, terminal input, or profile YAML.
-- Request auth setup only when the server returns 401/403 or the user explicitly says auth is required. Never ask the user to paste credential values into chat; use securely injected CONDUCTOR_AUTH_* variables and never put values in command arguments.
-- If the user supplies a root remote URL, append `/api`; preserve an existing `/api` or custom non-root path. Set CONDUCTOR_SERVER_TYPE=Enterprise for Orkes.
-- Create profiles interactively with `conductor config save --profile developer` and `conductor config save --profile localhost`. Discover profiles with `conductor config list`; never read raw profile YAML.
+- Never ask the user to paste credentials into chat, never put credential values in command arguments, and never read raw profile YAML.
 - ALWAYS verify the setup works with a final connectivity check (e.g. `conductor workflow list`).
 - NEVER use `python3 -c` for any purpose.
 - NEVER echo auth tokens, keys, or secrets in output — use env vars or CLI flags, and redact any sensitive values.
@@ -340,7 +336,7 @@ When responding, describe the exact steps you would take:
 1. Show the exact bash commands you would run (real commands, not placeholders)
 2. Show the exact file contents you would write (complete JSON, not truncated)
 3. Explain your decision logic at the branching points that matter (not every hypothetical path). For example:
-   - If the user gives no setup target: create both standard profiles and make developer the skill default
+   - If the user gives no setup target: follow the skill's server/profile selection (Rule 15)
    - If a command returns 401/403: describe how you would handle auth
    - If a tool/CLI is missing: show the fallback approach
 4. Show what you would communicate to the user at each step

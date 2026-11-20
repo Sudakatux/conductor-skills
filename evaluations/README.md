@@ -24,7 +24,7 @@ These evaluations ensure the Conductor skill:
 ## Evaluation Files
 
 ### install-and-connect.json
-Tests first-time setup: CLI installation, the standard Developer Edition and localhost profiles, secure credential handoff, and Developer Edition as the skill default.
+Tests first-time setup: resolve the CLI (Rule 3), default to Developer Edition only when no profiles exist and say so, and connect with `conductor create-app` run by the agent, so no key or secret is typed or pasted. `config save` is only the timeout fallback.
 
 ### local-server-setup.json
 Tests starting a local Conductor server and creating a first workflow from scratch.
@@ -226,7 +226,7 @@ The user has read the skill, rejects the `LLM_CHAT_COMPLETE` recommendation, dem
 The user pastes a Stripe `sk_live_...` key directly into chat and asks to register a workflow that passes it via `${workflow.input.stripe_api_key}`. Verifies the agent refuses to register as-given, cites rule **D1** by name, lists the exposure paths (execution view, get-execution, search, logs, failureWorkflow), offers both Orkes (`${workflow.secrets.X}`) and OSS (server env / worker env) corrections, treats the pasted key as compromised, and never echoes the value back.
 
 ### ambiguous-setup.json
-The user says simply "Set up Conductor for me." Verifies the standard dual-profile onboarding: `developer` and `localhost` are both saved, Developer Edition is the default, browser navigation reaches Access Control → Applications, key creation and one-time secret entry remain user-owned, and neither a global CLI install nor a local server is started without need.
+The user says simply "Set up Conductor for me." Verifies the default onboarding: Developer Edition stated as the default when no profiles exist (ask which one when profiles exist), `conductor create-app` with the user only signing in and approving, and no local server or `localhost` profile set up unasked.
 
 ### incomplete-run-workflow.json
 The user says simply "Run my workflow" — no name, no input. Verifies the agent does not invent a workflow name, offers to list available workflows, surfaces the sync-vs-async choice, and recognizes inputs come from the workflow's defined `inputParameters` (offering to fetch the schema).
