@@ -30,7 +30,9 @@ a checksum mismatch: SKILL.md Rule 3.
 | nothing, and profiles exist | ask which one (one question, Rule 14) | — |
 
 Never fall back to `developer` silently: when you use it by default, say
-*"Using Developer Edition. Give me a URL to use another Conductor server."*
+*"Using Developer Edition. Give me a URL to use another Conductor server, or
+say 'local' to run a local OSS server instead."* If they say local, follow
+[Local server (OSS)](#local-server-oss) instead of `create-app`.
 
 ### 3. Reuse a working profile
 
