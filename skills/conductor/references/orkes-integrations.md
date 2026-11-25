@@ -93,8 +93,9 @@ provider key, so the **user** types it.
    the machine that holds the profile (a cloud or web agent, a remote
    container), prefers the UI, or `integration add` reports **HTTP 403** (the
    application lacks the role — e.g. it was approved before the role change:
-   re-running `conductor create-app` and **Approve** fixes that; otherwise use
-   the UI). Don't generate or guess a link to a UI page — describe the steps in
+   with the user's OK, rerun `conductor create-app --yes` (same `--server`,
+   `--profile`; without `--yes` it fails `profile_exists`) and **Approve**;
+   otherwise use the UI). Don't generate or guess a link to a UI page — describe the steps in
    words, naming the cluster the profile points to (e.g.
    acme.orkesconductor.com) and the profile's application:
 
@@ -251,7 +252,7 @@ OSS has no prompt registry: prompts are always literal text and `prompt-*` comma
 | *"Prompt … is not associated with integration … and model …"* | Literal text in `instructions` / `promptName` / image `prompt` without `allowRawPrompts`, or the template isn't associated with that `integration:model` | Use a template name and `prompt-save … --model <integration>:<model>`, or set `allowRawPrompts: true` (§6) |
 | Registration fails: *"taskReferenceName: x … is not defined"* for prompt text | `${x}` template placeholder written inline in the workflow | Move the text into a saved template, or use a real expression (§6) |
 | `integration-list` returns 403 / `integration-wait` exits 4 | This application can't list integrations | Stop: ask an admin to create and share the integration (§2 step 5) |
-| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | Re-run `conductor create-app` → **Approve**, or the manual UI steps (§2 step 4) |
+| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | With the user's OK, re-run `conductor create-app --yes --server <url> --profile <p>` → **Approve**, or the manual UI steps (§2 step 4) |
 | `integration-save` returns 403 | This identity can't create integrations | §2: `conductor integration add` in the user's terminal, or the manual UI steps |
 | `integration-save`: "already exists" | Name taken | Use it (add models with `model-save`), or, with admin/CI credentials, `--overwrite` with all secrets re-supplied |
 | A `*-env` flag says the variable isn't set | Shell expanded `$VAR` into a value, or the variable isn't exported | Pass the bare name; ask the user to export it |

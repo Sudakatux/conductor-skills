@@ -26,6 +26,9 @@ These evaluations ensure the Conductor skill:
 ### install-and-connect.json
 Tests first-time setup: resolve the CLI (Rule 3), default to Developer Edition only when no profiles exist and say so, and connect with `conductor create-app` run by the agent, so no key or secret is typed or pasted. `config save` is only the timeout fallback.
 
+### create-app-denied.json, create-app-role-assign-failed.json, create-app-key-rejected.json
+Test the `Error: create-app failed (<code>)` table in setup.md. `denied`: stop, no unasked retry. `approval_failed` / `role_assign_failed`: show the step, suggest an admin, at most one retry. `key_rejected`: the old profile was kept, retry once. In every case the agent never claims a connection without exit 0 and `✓ Saved profile`.
+
 ### create-app-blocked.json
 Tests what happens when a permission check (Claude Code auto mode) blocks the agent's `create-app` call: no retry or workaround, the exact command handed to the user (with the `!` prefix tip), the turn ended, and `whoami` before continuing once the user says done.
 

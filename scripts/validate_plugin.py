@@ -316,6 +316,8 @@ def check_remote_setup_contract() -> None:
             "?setup=key",
             "conductor config save --profile",
             "Never fall back to `developer` silently",
+            "create-app failed (",
+            "If create-app fails",
         ):
             if required not in contents:
                 fail(
