@@ -3,17 +3,13 @@ name: conductor-setup
 description: First-time Conductor setup — get the CLI, connect with conductor create-app, verify
 ---
 
-Connect the user to a Conductor server using [skills/conductor/references/setup.md](../skills/conductor/references/setup.md#connect-with-conductor-create-app).
+Connect the user to a Conductor server by following [skills/conductor/references/setup.md](../skills/conductor/references/setup.md#connect-with-conductor-create-app) step by step. Don't skip checks. It covers the server and profile choice, the `create-app` failure codes and the fallbacks.
 
-Don't skip checks. Specifically:
+Hold to these while you do:
 
-- Run `sh <skill-dir>/scripts/ensure-cli.sh` (Windows: `ensure-cli.ps1`) and use the `CONDUCTOR_BIN` path it prints for every command. On exit 3, **ask the user before** running it with `--install` (one checksum-verified download to `~/.local/bin`; no sudo, no Node).
-- Server: a URL the user named wins. With none and no existing profiles, use Developer Edition (`https://developer.orkescloud.com`) and say so in one line; if profiles exist, ask which. Profile: `developer`, or the host's first label.
-- If that profile exists, `whoami` it; when it works, stop here.
-- Otherwise tell the user to sign in and click **Approve** in the browser, then **run** `"$CONDUCTOR_BIN" create-app --server <root-url> --profile <name>` yourself, with a tool timeout over 5 minutes. No secret is typed or printed.
-- You're connected only on exit 0 and a `✓ Saved profile` line. On any other result, take the code from `Error: create-app failed (<code>): …` and follow its row in [If create-app fails](../skills/conductor/references/setup.md#if-create-app-fails). Never claim success or retry blindly.
-- If the call is blocked or denied, don't retry or work around it. Give the user the exact command to run (in Claude Code, `! <command>`), ask for **done** or the pasted `Error: create-app failed` line, and end the turn.
-- Never ask for credentials in chat, put them in command arguments, read the clipboard, or read `~/.conductor-cli/config-*.yaml`.
-- Local OSS only when asked: `conductor server start` and an interactive `localhost` profile (`http://localhost:8080/api`, OSS, no auth).
+- Use the `CONDUCTOR_BIN` path `ensure-cli.sh` prints for every command, and ask before it installs anything (SKILL.md Rule 3).
+- You're connected only on exit 0 and a `✓ Saved profile` line. Never claim success otherwise.
+- If a permission check blocks `create-app`, don't retry or work around it. Give the user the exact command, end the turn, and wait for **done**.
+- Never ask for credentials in chat or read `~/.conductor-cli/config-*.yaml` (SKILL.md Rule 5).
 
 End with `"$CONDUCTOR_BIN" config list` and `"$CONDUCTOR_BIN" --profile <name> whoami`.

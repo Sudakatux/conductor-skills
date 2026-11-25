@@ -129,7 +129,7 @@ See [orkes.md](orkes.md) for `secret` and `webhook` commands. AI provider integr
 
 | Verb | CLI |
 |------|-----|
-| Create an integration (the **user** runs it: hidden key prompt) | `conductor integration add --type anthropic [--name {name}] [--model {id}] [--set field=value] [--share-with {email}]` |
+| Create an integration (the **user** runs it: [orkes-integrations.md §2](orkes-integrations.md#2-missing-integration--the-user-creates-it)) | `conductor integration add --type anthropic [--name {name}] [--model {id}] [--set field=value] [--share-with {email}]` |
 | List integrations this profile can see | `conductor integration list [--category AI_MODEL] [--json]` |
 | Models registered / offered by the key | `conductor integration models {name}` · `conductor integration models {name} --available` |
 | Add models to an integration | `conductor integration add-model {name} --model {id}` |

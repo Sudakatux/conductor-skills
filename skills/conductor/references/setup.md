@@ -17,14 +17,8 @@ clicks **Approve**.
 sh <skill-dir>/scripts/ensure-cli.sh          # Windows: powershell -File <skill-dir>\scripts\ensure-cli.ps1
 ```
 
-- Prints `CONDUCTOR_BIN=<path>` → use that full path for every later
-  `conductor` command (`~/.local/bin` is often not on the agent's PATH).
-- Exit 3 → no CLI, or one too old to have `create-app`. Ask once (Rule 3), then
-  `sh <skill-dir>/scripts/ensure-cli.sh --install`. It downloads the pinned
-  release from GitHub, verifies its sha256 and installs to `~/.local/bin`
-  (`%LOCALAPPDATA%\Programs\conductor` on Windows). No sudo, no Node, no shell
-  startup edits.
-- A checksum mismatch: stop and report it.
+Use the printed `CONDUCTOR_BIN` for every later command. Exit 3, installing and
+a checksum mismatch: SKILL.md Rule 3.
 
 ### 2. Pick the server and profile
 
@@ -128,70 +122,39 @@ A pasted secret is compromised: follow SKILL.md Rule 5.
 
 ## Local server (OSS)
 
-A local OSS server needs no access key:
+Only when the user asks for local. A local OSS server needs no access key:
 
 ```bash
-"$CONDUCTOR_BIN" server start
+"$CONDUCTOR_BIN" server start                     # --port 3000 for another port; `server status` to check
 "$CONDUCTOR_BIN" config save --profile localhost   # http://localhost:8080/api, OSS, no auth
 "$CONDUCTOR_BIN" --profile localhost workflow list --json
 ```
 
-Use `--profile localhost` only when the user asks for local.
-
 ## Profiles
 
 Profiles live in `~/.conductor-cli/config-<profile>.yaml` and may hold
-credentials: discover them with `conductor config list`, never by reading the
-files. Add another server any time with `conductor create-app --server <url>`.
+credentials. Discover them with `conductor config list`, never by reading the
+files. Add another server with `conductor create-app --server <url> --profile <name>`.
+The manual form, `conductor config save --profile <name>`, is interactive on
+purpose (`--auth-key` / `--auth-secret` values would land in shell history,
+process lists and transcripts), so the **user** runs it in their own terminal
+and answers the prompts. Use one with `conductor --profile <name> whoami`.
 
-The Python fallback script (`scripts/conductor_api.py`) does **not** support
-`create-app`; it reads a profile via `--profile <name>` (internally, never printed)
-or `CONDUCTOR_SERVER_URL` plus injected credentials.
+The Python fallback (`scripts/conductor_api.py`) has no `create-app`. It reads a
+profile with `--profile <name>` (internally, never printed) or
+`CONDUCTOR_SERVER_URL` plus injected credentials. Use it only when the CLI
+cannot be installed (SKILL.md Rule 3):
+`export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`, then see
+[fallback-cli.md](fallback-cli.md).
 
-**Fallback** — only when the CLI cannot be installed at all (see SKILL.md
-Rule 3): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`
-and see [fallback-cli.md](fallback-cli.md).
+## Without `create-app`: an explicit URL and injected credentials (CI)
 
-## Without `create-app`: an explicit URL or environment variables (CI)
+For CI, containers, and users who say credentials are already in the
+environment. Interactive users on Orkes use [`conductor create-app`](#connect-with-conductor-create-app).
+Don't ask local-vs-remote again when the user named a URL.
 
-For CI, containers and servers that already have credentials injected. Interactive
-users on Orkes should use [`conductor create-app`](#connect-with-conductor-create-app).
-
-### Choose and normalize a server
-
-If the user already supplied a server URL or selected a profile, use it
-immediately. For an interactive first-time setup, use [`conductor create-app`](#connect-with-conductor-create-app). Otherwise ask the user:
-
-- **Option A** — Start a local server (good for development/testing).
-- **Option B** — Connect to an existing remote server.
-
-Don't assume — present both.
-
-**Option A — local server:**
-
-```bash
-conductor server start
-# custom port:
-conductor server start --port 3000
-# verify:
-conductor server status
-```
-
-**Option B — existing server:**
-
-`CONDUCTOR_SERVER_URL` is the API base and must end in `/api`. A UI/root URL with
-no path is normalized by appending `/api`; do not append it twice and do not
-rewrite a URL that already has a non-root deployment path.
-
-```bash
-# https://developer.orkescloud.com/ -> https://developer.orkescloud.com/api
-export CONDUCTOR_SERVER_URL="https://developer.orkescloud.com/api"
-
-# For Orkes / Enterprise servers:
-export CONDUCTOR_SERVER_TYPE="Enterprise"
-```
-
-Examples:
+`CONDUCTOR_SERVER_URL` is the API base and must end in `/api`. A root URL gets
+`/api` appended once. A URL that already has a path is left as is.
 
 | User supplied | Use |
 |---|---|
@@ -199,35 +162,18 @@ Examples:
 | `https://pg-qa.orkesconductor.com` | `https://pg-qa.orkesconductor.com/api` |
 | `https://host.example/api` | unchanged |
 
-### Test connectivity and handle auth
-
 ```bash
-conductor workflow list
+export CONDUCTOR_SERVER_URL="https://pg-qa.orkesconductor.com/api"
+conductor workflow list        # 200 without credentials = OSS; 401/403 = Enterprise (Rule 17). Skip if the user says it needs auth
+export CONDUCTOR_SERVER_TYPE="Enterprise"   # Orkes
 ```
 
-If this succeeds without credentials, the server has no auth — it is **OSS** — go to Step 4.
-
-If you get **401 or 403**, the server requires authentication — it is **Enterprise (Orkes)**: set `CONDUCTOR_SERVER_TYPE=Enterprise`. (`python3 "$CONDUCTOR_API" server-info` makes the same check without sending credentials.) The same applies
-when the user explicitly says the target requires auth; an unauthenticated probe
-is then unnecessary.
-
-Never ask the user to paste a key, secret, or token into chat. Ask them to inject
-the variables through their shell, CI secret store, or the application's secure
-environment settings. Check only whether the variable names are present; never
-print their values and never use `set -x`, `env`, or credential-bearing CLI
-arguments.
-
-```bash
-# Key + Secret (recommended for Orkes / Enterprise)
-# Set securely outside the agent transcript:
-#   CONDUCTOR_AUTH_KEY
-#   CONDUCTOR_AUTH_SECRET
-
-# Or a pre-existing token
-#   CONDUCTOR_AUTH_TOKEN
-```
-
-Re-test: `conductor workflow list`
+On Enterprise, the user injects `CONDUCTOR_AUTH_KEY` + `CONDUCTOR_AUTH_SECRET`
+(or `CONDUCTOR_AUTH_TOKEN`) through their shell, CI secret store or secure
+environment settings. Check only that the names are set (Rule 5: never values,
+`env`, `set -x` or credential arguments), then re-run `conductor workflow list`
+and `conductor whoami`, and continue with the task. To remember the server,
+the user runs `conductor config save --profile <name>` ([Profiles](#profiles)).
 
 > **Auth behavior:** Orkes exchanges `CONDUCTOR_AUTH_KEY` +
 > `CONDUCTOR_AUTH_SECRET` at `POST /api/token`, then sends the returned JWT in
@@ -239,60 +185,10 @@ Re-test: `conductor workflow list`
 > Orkes: in cluster integrations — [orkes-integrations.md](orkes-integrations.md)), never
 > in the client environment — say so when reporting the connection.
 
-If the user pasted a credential into chat, follow SKILL.md Rule 5: treat it as
-compromised, do not use or repeat it, and recommend rotation.
+## Enable agents
 
-### Verify
-
-```bash
-conductor whoami                 # useful on authenticated Enterprise servers
-conductor workflow list
-```
-
-Report the result to the user. Setup complete.
-
-## Enable agents (only if the user will build or call agents)
-
-```bash
-export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"   # used with the CLI for agent verbs it lacks
-conductor agent list                              # table or "No agents found." = agent runtime on
-python3 "$CONDUCTOR_API" providers-status          # which LLM providers have keys on the SERVER
-```
-
-- `conductor server start` already passes `--conductor.integrations.ai.enabled=true --agentspan.embedded=true`, so a local server is ready.
-- A remote server needs `conductor.integrations.ai.enabled=true` (+ `agentspan.embedded=true`, `spring.main.allow-bean-definition-overriding=true`) and provider keys in **its** environment (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, …). Keys never go in agent code.
-- **Orkes (Enterprise):** LLM providers are cluster **integrations**, not server env vars — list them with `python3 "$CONDUCTOR_API" integration-list --category AI_MODEL` and create/extend them per [orkes-integrations.md](orkes-integrations.md). `conductor doctor` only inspects local env vars, not the cluster's integrations.
-- MCP / OpenAPI tool discovery is outbound deny-all: `conductor.ai.outbound.allowed-origins=https://tools.example.com` (`conductor.ai.outbound.allow-private-networks=true` for localhost in dev).
-- OSS secrets: `${workflow.secrets.NAME}` resolves from `CONDUCTOR_SECRET_NAME` env vars on the server (default `conductor.secrets.type=env`).
-- Symptom of a disabled runtime: an `AGENT` task with `agentType: "conductor"` fails with `AGENT requires 'agentUrl'`.
-
-Then continue with [agents.md](agents.md) and [agent-sdks.md](agent-sdks.md).
-
-## Additional named profiles (manual)
-
-Prefer `conductor create-app --server <url> --profile <name>`. The manual form:
-
-The current CLI saves profiles interactively. This is deliberate: putting
-`--auth-key` or `--auth-secret` values in a command would expose them in shell
-history, process listings, and agent/tool transcripts.
-
-```bash
-conductor config save --profile dev
-conductor config save --profile prod
-```
-
-Run those commands in the user's terminal and answer the interactive prompts for
-server URL, server type, and credentials. Do not send the secret through chat or
-an agent-executed command. Profiles live in
-`~/.conductor-cli/config-<profile>.yaml`; treat the files as sensitive.
-
-List profiles and use one without reading its file:
-
-```bash
-conductor config list
-conductor --profile dev whoami
-conductor --profile dev workflow list --json
-```
+Only if the user will build or call agents: run the prerequisite check in
+[agents.md §1](agents.md#1-prerequisite-check-run-before-anything-else).
 
 ## Updating this skill
 

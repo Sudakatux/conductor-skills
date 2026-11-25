@@ -25,6 +25,7 @@ python3 "$CONDUCTOR_API" providers-status                # which LLM providers a
 
 - `conductor agent list` returning 404 / HTML / connection error means the agent runtime is off. `conductor server start` enables it (`--conductor.integrations.ai.enabled=true --agentspan.embedded=true`). For a remote server the admin sets `conductor.integrations.ai.enabled=true` (and `agentspan.embedded=true`, `spring.main.allow-bean-definition-overriding=true`). **Stop here if it fails** — an `AGENT` task with `agentType: "conductor"` on such a server fails with the misleading `AGENT requires 'agentUrl'`.
 - Provider keys live on the **server** (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`, `OLLAMA_BASE_URL`, …), never in agent code. Pick a `provider/model` whose provider reports `configured: true` (provider names: `openai`, `anthropic`, `gemini`, `azureopenai`, `aws_bedrock`, `mistral`, `cohere`, `grok`, `perplexity`, `huggingface`, `ollama`; the Gemini model prefix is `google_gemini/`).
+- **Orkes (Enterprise):** LLM providers are cluster **integrations**, not server env vars: check them with `integration-list --category AI_MODEL` (SKILL.md Rule 16, [orkes-integrations.md](orkes-integrations.md)). `conductor doctor` only inspects local env vars.
 - MCP / OpenAPI tool discovery is outbound **deny-all** by default: the admin lists origins in `conductor.ai.outbound.allowed-origins` (`conductor.ai.outbound.allow-private-networks=true` for localhost in dev).
 
 ## 2. Which path? (SKILL.md Rule 8)
