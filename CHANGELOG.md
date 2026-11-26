@@ -4,6 +4,50 @@ All notable changes to the Conductor Skills plugin are documented here. Versions
 correspond to the shared `VERSION` file (see [PUBLISHING.md](PUBLISHING.md) for
 what that means across the three distribution channels).
 
+## 2.0.0
+
+Setup changed: how the agent picks a server and connects. Existing profiles,
+CLIs and `CONDUCTOR_*` environment variables keep working.
+
+### Changed
+
+- **Server, then flavor, then connect.** The agent picks the server in a fixed
+  order: a URL or "Developer Edition" in the request, `CONDUCTOR_SERVER_URL`, a
+  single working profile, a working `developer` profile among several (it says
+  so; otherwise it asks), a running local server, and only then Developer
+  Edition (announced). It probes OSS vs Orkes **before** connecting: OSS needs
+  no auth; Orkes reuses a working profile or injected `CONDUCTOR_AUTH_*`.
+- **Connecting to Developer Edition** uses `conductor create-app`: the user
+  signs in and clicks Approve in the browser, and no key or secret is typed or
+  pasted. On any other server the CLI stops with `no_launchpad`, and the user
+  creates an access key in the UI and saves it with `conductor config save`.
+- **The CLI.** `scripts/ensure-cli.sh` / `ensure-cli.ps1` accept any installed
+  `conductor`. A newer CLI is required (and installed, after asking) only for
+  `create-app` and `conductor integration add`. The installer no longer uses
+  npm; a stated install limit or a declined install goes to the bundled Python
+  fallback.
+- **Missing LLM integrations on Orkes** are created by the user with
+  `conductor integration add` in their own terminal (hidden key prompt), or in
+  the UI.
+- The skill description no longer promises local auto-detection; it says it
+  works with OSS Conductor and Orkes Conductor.
+
+### Added
+
+- Evals: `"topics"` per eval, so the runner sends SKILL.md plus only the
+  references and examples an eval needs (largest per-eval context about 210k
+  chars, down from 338k). `validate_plugin.py` checks topics and budgets the
+  largest per-eval context.
+- Evals for CI with injected credentials, existing `developer` + `localhost`
+  profiles, a running local server, a Launch Pad prompt naming Developer
+  Edition, and `create-app failed (no_launchpad)`.
+
+### Fixed
+
+- Windows: `ensure-cli.ps1` runs with `-ExecutionPolicy Bypass`, works on
+  Windows PowerShell 5.1 when an old CLI writes to stderr, and Git Bash points
+  at it instead of failing.
+
 ## 1.8.0
 
 ### Added

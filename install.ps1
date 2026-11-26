@@ -18,7 +18,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$SCRIPT_VERSION = "1.8.0"
+$SCRIPT_VERSION = "2.0.0"
 # Per-file fetches and the upgrade-check both read from `main`. Releases are
 # rolled by bumping VERSION on main, not by tagging.
 # FORK ONLY: serve files from the fork branch (drop before upstreaming).
