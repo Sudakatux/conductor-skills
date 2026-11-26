@@ -9,10 +9,10 @@
   ],
   "query": "List the registered workflows and fail the job if `order_pipeline` is missing. (Context: this runs unattended in a CI job; no one will answer questions. CONDUCTOR_SERVER_URL=https://acme.orkesconductor.com/api, CONDUCTOR_AUTH_KEY and CONDUCTOR_AUTH_SECRET are set as CI secrets. `conductor` v0.1.9 from npm is on PATH; it has no `create-app` command. No saved profiles.)",
   "expected_behavior": [
-    "Step 1: Resolve the CLI with `ensure-cli.sh` (no `--need`): the v0.1.9 CLI on PATH is accepted, so there is no install question",
+    "Step 1: Use the v0.1.9 `conductor` on PATH (Rule 3.1); it's fine for this job, so there is no install or update question",
     "Step 2: Server choice: `CONDUCTOR_SERVER_URL` is set, so use it; don't default to Developer Edition and don't ask which server",
     "Step 3: Credentials are already injected: check only that CONDUCTOR_AUTH_KEY / CONDUCTOR_AUTH_SECRET are set (names, never values), set CONDUCTOR_SERVER_TYPE=Enterprise if needed",
-    "Step 4: No `conductor create-app`, no browser approval, no `ensure-cli --need create-app`",
+    "Step 4: No `conductor create-app`, no browser approval, no `create-app --help` check",
     "Step 5: Run `conductor workflow list --json`, look for `order_pipeline`, and exit non-zero (or report failure) if it's missing"
   ],
   "success_criteria": [

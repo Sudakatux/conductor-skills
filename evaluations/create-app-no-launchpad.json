@@ -7,7 +7,7 @@
     "setup",
     "orkes"
   ],
-  "query": "connect to https://acme.orkesconductor.com and list my workflows. (Context: CONDUCTOR_BIN=/Users/me/.local/bin/conductor; no profiles; no CONDUCTOR_AUTH_* variables. `server-info` said Enterprise. You ran `/Users/me/.local/bin/conductor create-app --server https://acme.orkesconductor.com --profile acme`; it exited 1 at once and stderr was: `Error: create-app failed (no_launchpad): create-app is only available on Orkes Developer Edition (developer.orkescloud.com)`.)",
+  "query": "connect to https://acme.orkesconductor.com and list my workflows. (Context: `conductor` (v0.1.10, has `create-app`) is on PATH; no profiles; no CONDUCTOR_AUTH_* variables. `server-info` said Enterprise. You ran `conductor create-app --server https://acme.orkesconductor.com --profile acme`; it exited 1 at once and stderr was: `Error: create-app failed (no_launchpad): create-app is only available on Orkes Developer Edition (developer.orkescloud.com)`.)",
   "expected_behavior": [
     "Step 1: Read the code `no_launchpad`: acme isn't Developer Edition, so create-app can't work there; no browser was opened",
     "Step 2: Don't retry create-app and don't say 'click Approve'",

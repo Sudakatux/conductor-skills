@@ -21,11 +21,12 @@ CLIs and `CONDUCTOR_*` environment variables keep working.
   signs in and clicks Approve in the browser, and no key or secret is typed or
   pasted. On any other server the CLI stops with `no_launchpad`, and the user
   creates an access key in the UI and saves it with `conductor config save`.
-- **The CLI.** `scripts/ensure-cli.sh` / `ensure-cli.ps1` accept any installed
-  `conductor`. A newer CLI is required (and installed, after asking) only for
-  `create-app` and `conductor integration add`. The installer no longer uses
-  npm; a stated install limit or a declined install goes to the bundled Python
-  fallback.
+- **The CLI.** Resolution is unchanged (on PATH, else `npx --yes`, a global npm
+  install only after asking, else the Python fallback); `npx` now passes
+  `--yes`, never `sudo`, and an nvm/asdf hint comes before the fallback. A
+  newer CLI is needed only for `create-app` and `conductor integration add`:
+  the agent checks `<command> --help` right before running them and, if it's
+  too old, asks and runs `conductor update`.
 - **Missing LLM integrations on Orkes** are created by the user with
   `conductor integration add` in their own terminal (hidden key prompt), or in
   the UI.
@@ -40,13 +41,15 @@ CLIs and `CONDUCTOR_*` environment variables keep working.
   largest per-eval context.
 - Evals for CI with injected credentials, existing `developer` + `localhost`
   profiles, a running local server, a Launch Pad prompt naming Developer
-  Edition, and `create-app failed (no_launchpad)`.
+  Edition, `create-app failed (no_launchpad)`, and a CLI too old for
+  `create-app`.
 
-### Fixed
+### Fork only (drop before release)
 
-- Windows: `ensure-cli.ps1` runs with `-ExecutionPolicy Bypass`, works on
-  Windows PowerShell 5.1 when an old CLI writes to stderr, and Git Bash points
-  at it instead of failing.
+- Rule 3 and setup.md run the CLI as `npx --yes github:Sudakatux/conductor-cli#conductor-login`
+  (or `npm install -g` of it), and Rule 3.5 updates that way instead of
+  `conductor update`, which would pull the upstream release without
+  `create-app`. The installers serve `Sudakatux/conductor-skills@no-ensure-cli`.
 
 ## 1.8.0
 

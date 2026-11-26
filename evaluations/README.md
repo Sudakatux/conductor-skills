@@ -32,6 +32,9 @@ Test the `Error: create-app failed (<code>)` table in setup.md. `denied`: stop, 
 ### create-app-blocked.json
 Tests what happens when a permission check (Claude Code auto mode) blocks the agent's `create-app` call: no retry or workaround, the exact command handed to the user (with the `!` prefix tip), the turn ended, and `whoami` before continuing once the user says done.
 
+### create-app-cli-too-old.json
+SKILL.md Rule 3.5: an old `conductor` on PATH is fine until `create-app`; right before it, `create-app --help` fails, so the agent asks once to update (upstream `conductor update`; the fork build uses the `npx --yes github:Sudakatux/conductor-cli#conductor-login` form) and ends the turn. No update for other commands.
+
 ### create-app-no-launchpad.json
 The CLI's `create-app failed (no_launchpad)` (the server isn't Orkes Developer Edition): no retry, no "click Approve", the manual key path (UI access key + interactive `config save` in the user's own terminal) or injected `CONDUCTOR_AUTH_*`.
 

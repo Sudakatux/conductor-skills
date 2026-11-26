@@ -7,12 +7,12 @@
     "setup",
     "orkes"
   ],
-  "query": "Show me my workflows. (Context: ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor. `conductor config list` shows two profiles, `developer` and `localhost`, created by an older version of this skill. `conductor --profile developer whoami` succeeds. No CONDUCTOR_SERVER_URL is set.)",
+  "query": "Show me my workflows. (Context: `conductor` (v0.1.10, has `create-app`) is on PATH. `conductor config list` shows two profiles, `developer` and `localhost`, created by an older version of this skill. `conductor --profile developer whoami` succeeds. No CONDUCTOR_SERVER_URL is set.)",
   "expected_behavior": [
     "Step 1: Server choice: several profiles exist and none is named; a `developer` profile exists and its whoami works, so use it",
     "Step 2: Say so in one line (e.g. Using your `developer` profile; name another to switch) instead of asking which profile",
     "Step 3: Don't run `conductor create-app`: the profile already works",
-    "Step 4: Run `/Users/me/.local/bin/conductor --profile developer workflow list --json` and present the result"
+    "Step 4: Run `conductor --profile developer workflow list --json` and present the result"
   ],
   "success_criteria": [
     "Uses the `developer` profile without asking which profile to use",

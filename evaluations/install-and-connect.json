@@ -4,7 +4,7 @@
   "topics": ["setup", "orkes"],
   "query": "I want to start using Conductor but I don't have anything set up yet",
   "expected_behavior": [
-    "Step 1: Resolve the CLI per Rule 3 (`ensure-cli.sh` accepts any `conductor`); right before `create-app`, run it with `--need create-app`, asking before installing anything; use the printed `CONDUCTOR_BIN` for every later command",
+    "Step 1: Resolve the CLI per Rule 3 (on PATH, else `npx --yes …`, a global install only after asking); right before `create-app`, check `conductor create-app --help` (Rule 3.5: too old → ask, then update)",
     "Step 2: Run `conductor config list`. No profiles and no server named → use Developer Edition (`https://developer.orkescloud.com`, profile `developer`) and say so in one line, inviting a URL for another server",
     "Step 3: Run `conductor create-app --server https://developer.orkescloud.com --profile developer` itself, with a long timeout, and tell the user to sign in and click **Approve** when the browser opens (after the CLI's `Opening <url>` line, or conditionally beforehand). No key or secret is typed, pasted or printed",
     "Step 4: Verify with `conductor --profile developer whoami` and `conductor --profile developer workflow list --json`",

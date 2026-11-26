@@ -4,7 +4,7 @@
   "topics": ["setup", "orkes"],
   "query": "Connect me to my Conductor server at https://conductor.mycompany.com/api",
   "expected_behavior": [
-    "Step 1: Resolve the CLI per Rule 3 (`ensure-cli.sh` accepts any `conductor`; no `--need` yet), asking before installing if none exists",
+    "Step 1: Resolve the CLI per Rule 3 (any `conductor` on PATH, else `npx --yes …`; no `create-app` check yet)",
     "Step 2: Set CONDUCTOR_SERVER_URL to the provided URL",
     "Step 3: Test connectivity with `conductor workflow list`",
     "Step 4: If 401/403 error, inform user the server requires authentication",
