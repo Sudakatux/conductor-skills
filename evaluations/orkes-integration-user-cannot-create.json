@@ -1,0 +1,20 @@
+{
+  "name": "User can't create integrations either — stop and ask an admin",
+  "skills": [
+    "conductor"
+  ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
+  "query": "I tried the UI steps you gave me but there's no New Integration button, and when I open Integrations it says I don't have permission. What now? (Context: `conductor integration add` had returned HTTP 403 even after re-running `conductor create-app`, so you gave the manual UI steps; you were waiting for an OpenAI integration with gpt-4o-mini for profile `acme`, default_app application.)",
+  "expected_behavior": [
+    "Step 1: Recognize the user's own account can't create integrations on this cluster",
+    "Step 2: Stop the integration flow — don't retry integration-save, don't ask for the OpenAI key, don't suggest an HTTP task to api.openai.com",
+    "Step 3: Give a clear message to forward: neither the default_app application nor the user can create integrations here, so ask an admin to create an OpenAI integration with gpt-4o-mini and share it with the default_app application (Access Control → Applications → default_app → Integration tab)",
+    "Step 4: Offer to continue once the admin is done: rerun `integration-wait --type openai --model gpt-4o-mini` when the user says so"
+  ],
+  "success_criteria": [
+    "Stops with an 'ask an admin' message that names the provider, the model and the default_app application",
+    "Does not ask for or accept the provider key in chat and does not retry integration-save",
+    "Does not work around it with an HTTP task or by setting OPENAI_API_KEY on the server",
+    "Offers to resume with integration-wait once the admin has shared the integration"
+  ]
+}

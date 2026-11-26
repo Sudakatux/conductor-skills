@@ -1,6 +1,7 @@
 {
   "name": "DO_WHILE GraalJS Gotchas — IIFE, evaluatorType, scope rules",
   "skills": ["conductor"],
+  "topics": ["workflows"],
   "query": "I need a DO_WHILE loop that runs until either iteration hits max_retries (from workflow input) OR the previous attempt's `success` field is true. The body is a single HTTP call. Show me the JSON.",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (DO_WHILE), references/graaljs-gotchas.md, and references/template-resolution.md",

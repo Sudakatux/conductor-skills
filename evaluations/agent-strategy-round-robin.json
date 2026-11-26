@@ -1,6 +1,7 @@
 {
   "name": "Developer / Reviewer / Approver Rotation With Allowed Transitions and Termination (Strategy.ROUND_ROBIN)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Code-review loop as an agent: a `developer` proposes a patch, a `reviewer` critiques it, and an `approver` signs off. They take turns in a fixed order — the developer can only be followed by the reviewer, and the reviewer can send it back to the developer or forward to the approver. It must stop when the approver says APPROVED or after a dozen messages, whichever comes first. Python.",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `round_robin` row: fixed rotation; `allowed_transitions` constrains who may follow whom; stop rules `termination=TextMentionTermination(\"...\") | MaxMessageTermination(n)`, `&`, `StopMessageTermination`, `TokenUsageTermination`), references/agents.md §4 (`allowed_transitions`, `termination`, `max_turns`), references/optimization.md F1/F3, and WebFetch the Python SDK `docs/agents/` before pinning the install.",

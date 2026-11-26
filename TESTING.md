@@ -71,7 +71,7 @@ These run on the repo before involving any AI agent.
 | TC-PRE-03 | VERSION coherence | `grep -E '"version":' .claude-plugin/*.json package.json && cat VERSION` | Same version in all six places (covered by TC-PRE-01 too) |
 | TC-PRE-04 | License + headers present | Inspect `LICENSE.txt`, `README.md` top | Apache 2.0 license intact, attribution present |
 | TC-PRE-05 | Installer parity | `python3 scripts/validate_plugin.py` (installer-parity check) | No `install.sh` / `install.ps1` "does not ship" or "non-existent file" lines; the `SKILL_FILES` lists in both scripts equal the set of files under `skills/conductor/**` |
-| TC-PRE-06 | Eval context budget | `python3 scripts/run_evals.py --print-context-size` (no API key needed; `validate_plugin.py` prints the same line) | `Eval context size: N chars (~T tokens)` with N ≤ 300,000; validator warns above 300,000 and fails above 340,000 |
+| TC-PRE-06 | Eval context budget | `python3 scripts/run_evals.py --print-context-size` (no API key needed; `validate_plugin.py` prints the same sizes) | Prints the full-load size and the largest per-eval size (evals load SKILL.md plus their `topics`). Validator warns when the full load is above 300,000 and fails when any eval's context is above 340,000 |
 
 ### 2.1 CI smoke (post-push)
 
@@ -127,7 +127,7 @@ The GitHub Actions `validate-plugin` workflow runs on push to `main` and on any 
 
 | ID | Description | Env | Steps | Expected |
 |----|-------------|-----|-------|----------|
-| TC-CMD-10 | First-time on clean machine | E1 | `/conductor-setup` | Detects missing CLI; offers `npx` first; **asks before** `npm install -g` |
+| TC-CMD-10 | First-time on clean machine | E1 | `/conductor-setup` | `ensure-cli.sh` exits 3; agent **asks before** `--install` (no `npm install -g`); then announces Developer Edition and connects with `create-app` |
 | TC-CMD-11 | CLI already installed | E2 | `/conductor-setup` | Skips install and starts the standard `developer` + `localhost` profile setup |
 | TC-CMD-12 | Local server option | E2 | `/conductor-setup`, choose Option A | Runs `conductor server start`; verifies with `conductor server status` |
 | TC-CMD-13 | Remote no-auth option | E3 | `/conductor-setup`, choose Option B, no creds requested | Sets `CONDUCTOR_SERVER_URL`, `conductor workflow list` returns OK |
@@ -137,7 +137,7 @@ The GitHub Actions `validate-plugin` workflow runs on push to `main` and on any 
 | TC-CMD-18 | Explicit Orkes URL | E5 | "Use https://developer.orkescloud.com/; auth env is already set" | Does not re-ask local-vs-remote; uses `https://developer.orkescloud.com/api`, Enterprise mode, and verifies with no credential output |
 | TC-CMD-19 | Fallback key/secret auth | E5 without CLI/npm | Run `conductor_api.py list-workflows` with key/secret env | Exchanges at `/api/token` in memory and sends JWT via `X-Authorization` without printing it |
 | TC-CMD-19a | Default dual-profile setup | E2/E5 | `/conductor-setup` with no target | Creates interactive `developer` and `localhost` profiles; uses visible Developer Edition navigation and a user-owned key-creation handoff; defaults later commands to `--profile developer` |
-| TC-CMD-17 | `npm install -g` requires confirmation | E1 | When CLI is missing and user picks global install | Agent **explicitly confirms** before running install command |
+| TC-CMD-17 | CLI install requires confirmation | E1 | When `ensure-cli.sh` exits 3 | Agent **explicitly confirms**, ends its message with the question, and only then runs the printed `--install` command |
 
 ### 4.3 `/conductor-optimize`
 
@@ -192,10 +192,10 @@ Requires the agent runtime: E2 started with `conductor server start` (sets `cond
 
 | ID | Description | Env | Steps | Expected |
 |----|-------------|-----|-------|----------|
-| TC-SET-01 | "Help me set up Conductor" | E1 | Prompt agent in plain English | Agent walks the default dual-profile flow in `references/setup.md`, creating `developer` and `localhost` and using `developer` by default |
-| TC-SET-02 | Install via npx (no global) | E1 | When prompted, prefer no global install | Agent uses `npx @conductor-oss/conductor-cli ...` |
-| TC-SET-03 | Connect to local server | E2 | "Connect to my local Conductor" | CLI auto-detects; no env var needed |
-| TC-SET-04 | Connect to remote URL | E3 | "Connect to https://my.example.com/api" | Sets `CONDUCTOR_SERVER_URL`; verifies |
+| TC-SET-01 | "Help me set up Conductor" | E1 | Prompt agent in plain English | Agent follows `references/setup.md` (server → flavor → connect): with no profiles it announces Developer Edition and runs `create-app`; no `localhost` profile unasked |
+| TC-SET-02 | Existing CLI is enough | E2 | Old `conductor` (no `create-app`) on PATH; "list my workflows" on a local server | `ensure-cli.sh` accepts it; no install question; `--need create-app` only right before `create-app` |
+| TC-SET-03 | Connect to local server | E2 | "Connect to my local Conductor" | CLI auto-detects; no env var needed; no `create-app` |
+| TC-SET-04 | Connect to remote URL | E3 | "Connect to https://my.example.com/api" | Probes without credentials first; OSS → sets `CONDUCTOR_SERVER_URL` and verifies, no `create-app` |
 | TC-SET-05 | Connect to Orkes | E5 | "Connect to my Orkes server at developer.orkescloud.com with my key/secret" | Sets `CONDUCTOR_AUTH_KEY` + `_SECRET`; never echoes values |
 | TC-SET-06 | Save profile | E6 | "Save this as profile dev" | `conductor config save --profile dev` succeeds |
 | TC-SET-07 | Switch profile | E6 | "Switch to my prod profile" | All subsequent commands carry `--profile prod` |
@@ -606,7 +606,7 @@ Use Appendix D as the fixture. For code-defined agents, `/conductor-optimize` sh
 | TC-SEC-05 | No `python3 -c` at runtime | E2 | Watch agent's tool calls during any session | Never invokes `python3 -c`; uses script files only |
 | TC-SEC-06 | Sensitive workflow input flagged | E2 | Workflow with input named `apiKey` | Optimization review flags D1 CRITICAL |
 | TC-SEC-07 | Hardcoded URL flagged | E2 | Workflow with `uri: "https://prod.example.com/..."` | Optimization review flags D2 WARN |
-| TC-SEC-08 | npm install -g requires consent | E1 | Setup flow | Asks before running global install |
+| TC-SEC-08 | CLI install requires consent | E1 | Setup flow | Asks before `ensure-cli.sh --install`; never `npm install -g` or a piped remote script |
 
 ---
 
@@ -658,7 +658,7 @@ The slash commands are Claude Code-specific. Confirm the **skill content** still
 | TC-EVL-08 | New optimization eval | Any | (Once added) `optimize-workflow.json` | Passes |
 | TC-EVL-09 | Failing eval correctly fails | Any | Edit a scenario to add an impossible criterion | Exit code 1, scenario reported as failed |
 | TC-EVL-10 | Agent evals pass | Any | `python3 scripts/run_evals.py evaluations/agent-*.json evaluations/negative-agent-*.json` | Every scenario ≥ 80 %; exit 0 |
-| TC-EVL-11 | Context-size probe needs no key | Any | `env -u ANTHROPIC_API_KEY python3 scripts/run_evals.py --print-context-size` | Prints `Eval context size: N chars (~T tokens)` and exits 0 without an API-key error |
+| TC-EVL-11 | Context-size probe needs no key | Any | `env -u ANTHROPIC_API_KEY python3 scripts/run_evals.py --print-context-size` | Prints `Eval context size (full load): N chars (~T tokens)` and the largest per-eval context, and exits 0 without an API-key error |
 | TC-EVL-12 | Sharded CI merge | CI | Trigger the `Skill Evals` workflow (label a PR `run-evals` or dispatch) | Five `evals` shard jobs plus one `report` job; merged `report.json` has `summary.total_evals` equal to the number of `evaluations/*.json`; exactly one PR comment; HTML artifact `eval-report-<model>` present |
 | TC-EVL-13 | Strategy / capability evals pass | Any | `python3 scripts/run_evals.py evaluations/agent-strategy-*.json evaluations/agent-composition-*.json evaluations/agent-memory-*.json evaluations/agent-tools-*.json evaluations/agent-code-*.json evaluations/agent-bring-claude-*.json evaluations/agent-hosted-*.json evaluations/agent-skill-*.json evaluations/agent-sdk-csharp-*.json evaluations/agent-a2a-server-*.json` | Every scenario ≥ 80 %; exit 0; each response names the compiled shape from §12d (SUB_WORKFLOW children, FORK_JOIN, `transfer_to_<peer>`, `{name}_process_selection`, planner/fallback, …) with `provider/model`, no `conductor deploy`, and `agentType` never a framework name |
 | TC-EVL-14 | AGENT-task field evals pass | Any | `python3 scripts/run_evals.py evaluations/agent-task-*.json` | Every scenario ≥ 80 %; inline `agentConfig` / `framework`+`rawConfig` / `skillRef` shown as mutually exclusive, per-call `version`/`model`/`context`/`idempotencyKey`/`sessionId` explained, DO_WHILE conversation loops bounded, a2a `streaming`/`pushNotification`/`historyLength` covered |

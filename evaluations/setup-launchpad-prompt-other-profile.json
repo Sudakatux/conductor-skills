@@ -1,0 +1,25 @@
+{
+  "name": "Launch Pad Prompt Names Developer Edition — Not the Saved acme Profile",
+  "skills": [
+    "conductor"
+  ],
+  "topics": [
+    "setup",
+    "orkes",
+    "workflows"
+  ],
+  "query": "I'm using Orkes Conductor Developer Edition at https://developer.orkescloud.com.\n\nInstall Conductor Skills if they're missing. Then use them to create a workflow that checks the current weather in San Francisco with an HTTP task and returns a short summary. (Context: ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor. `conductor config list` shows one profile, `acme`, for https://acme.orkesconductor.com, and its whoami works.)",
+  "expected_behavior": [
+    "Step 1: Server choice: the request names a server (Developer Edition at https://developer.orkescloud.com), which wins over the saved `acme` profile",
+    "Step 2: There is no profile for developer.orkescloud.com, so connect with create-app: `ensure-cli.sh --need create-app` (ask before installing), then `create-app --server https://developer.orkescloud.com --profile developer` with a long timeout; relay the Approve instruction when the browser opens",
+    "Step 3: Only on exit 0 and `✓ Saved profile \"developer\"`, verify with `--profile developer whoami`",
+    "Step 4: Build and run the weather workflow with `--profile developer` (JSON written to a file first)"
+  ],
+  "success_criteria": [
+    "Uses Developer Edition, not the `acme` profile, for this request",
+    "Never runs commands against acme for this task",
+    "Connects with `conductor create-app` on developer.orkescloud.com (profile `developer`), not with a pasted key",
+    "Claims the connection only after exit 0 and a `✓ Saved profile` line",
+    "Builds the workflow on Developer Edition with `--profile developer`"
+  ]
+}

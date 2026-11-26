@@ -1,6 +1,7 @@
 {
   "name": "Bring a LangChain create_agent Agent to Conductor (drop-in import, compiled vs passthrough)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "I have a LangChain agent: `ChatOpenAI(model='gpt-4o-mini')`, two `langchain_core.tools` `@tool` functions, built with `create_agent(model, tools, system_prompt=...)`. How do I run and deploy this on Conductor?",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (framework execution model: plain LangChain is passthrough; the SDK's `create_agent` drop-in enables full extraction) and references/agent-sdks.md (LangChain row for Python — recommended import `from conductor.ai.agents.langchain import create_agent`).",

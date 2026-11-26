@@ -1,6 +1,7 @@
 {
   "name": "Offline Unit Tests plus Nightly Live Correctness Eval for a Python Agent",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "I want proper tests for my Python `support_triage` agent: fast offline unit tests that run in CI on every PR without hitting an LLM, plus a nightly live correctness eval against a real Conductor server. Set that up.",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (testing section — the ladder: unit → trace assertions → live correctness → semantic → production monitoring; Python has the full `conductor.ai.agents.testing` module), references/agent-sdks.md, and examples/agent-deploy-and-invoke.md.",

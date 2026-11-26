@@ -1,6 +1,7 @@
 {
   "name": "Editorial Team Where a Human Picks the Next Agent Every Turn (Strategy.MANUAL)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Editorial-team agent with `writer`, `editor` and `fact_checker` — but our managing editor insists on choosing which agent goes next at every step, personally. Python. How does the run pause, how does she answer (she'll use the CLI, or we'll wire a button), and what has to be running in prod for this to work?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `manual` row: the run pauses every turn with `waiting` + `pendingTool.response_schema`; a human picks the next agent via `handle.respond({...})`; `serve()` / `run()` register the `{name}_process_selection` worker; MANUAL selection is a worker so the agent worker gate applies), references/agents.md §7 (HITL contract — `waiting`, `pendingTool`, answer channels), §8 (`conductor agent respond <id> -m`, `POST /api/agent/{id}/respond`), references/workflow-definition.md (`### AGENT` — `waiting`, resume with `executionId` + `prompt`), references/optimization.md F1, F3, F8.",

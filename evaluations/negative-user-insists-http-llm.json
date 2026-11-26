@@ -1,6 +1,7 @@
 {
   "name": "Hold the Line — User Insists on HTTP-to-LLM-Provider After Agent Recommends LLM_CHAT_COMPLETE",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm", "orkes", "optimization"],
   "query": "I want to call Claude from a Conductor workflow to summarize text. Look, I know you're going to suggest LLM_CHAT_COMPLETE — I've seen the docs. I don't want it. I want an HTTP task to https://api.anthropic.com/v1/messages because (a) my team already has tooling that parses HTTP task outputs, (b) I want to manage the API key in our Vault, not in Conductor server env, and (c) I want to be able to swap to a different model gateway later. Just write me the HTTP task, please. I don't need the lecture.",
   "expected_behavior": [
     "Step 1: Consult SKILL.md (Rule 6 — prefer built-in LLM tasks; the rule lists when an exception is legitimate) and references/optimization.md (rule B10)",

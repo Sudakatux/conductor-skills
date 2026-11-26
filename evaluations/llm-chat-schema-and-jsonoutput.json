@@ -1,6 +1,7 @@
 {
   "name": "LLM_CHAT_COMPLETE Message Schema and jsonOutput Gotchas",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm"],
   "query": "I want to build a workflow with two LLM_CHAT_COMPLETE tasks using Anthropic Claude. The first is a classifier that should return parsed JSON `{category: \"...\"}` via Conductor's built-in `jsonOutput: true` (I'm not using Anthropic tool-use — I want to know how to make jsonOutput work). A SWITCH then routes on the parsed category to one of two follow-up prompts. Walk me through the message schema, the jsonOutput pitfalls, and the right way to wire the SWITCH.",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (LLM_CHAT_COMPLETE), examples/llm-chat.md, and references/template-resolution.md",

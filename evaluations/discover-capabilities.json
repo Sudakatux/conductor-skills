@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["schedules"],
   "query": "What can you help me do with Conductor?",
   "expected_behavior": [
     "Step 1: Activate the conductor skill from natural-language intent (no slash command typed)",

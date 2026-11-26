@@ -1,6 +1,7 @@
 {
   "name": "Fix agentName → name and the Output Path on an AGENT Task",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Register this workflow for me:\n\n```json\n{\n  \"name\": \"plan_then_build\",\n  \"version\": 1,\n  \"schemaVersion\": 2,\n  \"timeoutSeconds\": 3600,\n  \"timeoutPolicy\": \"TIME_OUT_WF\",\n  \"tasks\": [\n    {\n      \"name\": \"run_planner\",\n      \"taskReferenceName\": \"run\",\n      \"type\": \"AGENT\",\n      \"inputParameters\": {\n        \"agentType\": \"conductor\",\n        \"agentName\": \"planner\",\n        \"prompt\": \"${workflow.input.goal}\",\n        \"maxDurationSeconds\": 1800\n      }\n    }\n  ],\n  \"outputParameters\": {\n    \"plan\": \"${run.output.result}\"\n  }\n}\n```",
   "expected_behavior": [
     "Step 1: Consult SKILL.md Rule 10, references/workflow-definition.md (`### AGENT` conductor mode: input is `name`, outputs are `executionId`, `agentName`, `state`, `text`, `output{result,...}`, `waiting`), and references/optimization.md rule F7.",

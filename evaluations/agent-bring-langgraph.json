@@ -1,6 +1,7 @@
 {
   "name": "Deploy a LangGraph create_react_agent Graph and Call It from an Existing Workflow",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "I have a LangGraph agent built with `create_react_agent(model, tools)` in `agents/support.py`. Deploy it to Conductor and call it from my existing `ticket_router` workflow.",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (decision table → path 3; framework execution model: LangGraph is compiled when a `model` is extractable, otherwise passthrough), references/agent-sdks.md (LangGraph row), references/workflow-definition.md (`### AGENT`, conductor mode), and examples/agent-deploy-and-invoke.md.",

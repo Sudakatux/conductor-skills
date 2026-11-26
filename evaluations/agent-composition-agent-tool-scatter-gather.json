@@ -1,6 +1,7 @@
 {
   "name": "Call a Child Agent as a Tool (agent_tool) and Fan a Worker Agent Out Over 50 Sub-Tasks (scatter_gather)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Two things, in Python. First, a `release_manager` agent should be able to ask a `changelog_writer` agent for a changelog as a tool call and get the text back — it must keep control, not hand the conversation off. Second, we have about 50 repositories to audit for license compliance; I want one coordinator that splits the job, fans an `auditor` agent out over all of them, tolerates a few failures, and summarizes. What are the cost and safety knobs?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 composition paragraph (`agent_tool(child, name=..., description=...)` calls a child as a tool and returns its result without transferring control — compiles to `SUB_WORKFLOW`; `scatter_gather(name, worker=..., model=..., instructions=..., retry_count=3, fail_fast=False)` builds a coordinator that decomposes a task, fans the worker out N times as `FORK_JOIN_DYNAMIC` and synthesizes), references/agents.md §5 tools table (`agent_tool` → `SUB_WORKFLOW`, no worker for the tool itself but the sub-agent's own workers still need serving), references/optimization.md F1, F3 and F10 (`agent_tool` without `max_calls`, children without `max_turns`, `FORK_JOIN_DYNAMIC` over agents without batching → WARN/CRITICAL; fixes: `max_calls`, `max_turns`, batch size, `concurrentExecLimit`).",

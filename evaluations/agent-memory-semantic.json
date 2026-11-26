@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Our `customer_agent` should remember facts about customers across runs — 'Alice prefers email', 'Bob's account is enterprise' — and pull the relevant ones into the conversation when asked. A teammate says we just pass the same `sessionId` on every AGENT call and the agent will remember. Python. Is that right, and how should we actually do it?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §7 (`SemanticMemory(max_results=3)`, `memory.add(...)`, a `@tool recall(query)` returning `memory.get_context(query)`), references/agents.md §4 (`session_id` correlates executions — it becomes `contextId` — but does not replay earlier turns into a new run; for continuity set `memory=` with `ConversationMemory` / `SemanticMemory` or feed the previous result back in `prompt` / `context`), §5 (memory building blocks `ConversationMemory`, `SemanticMemory`, `MemoryStore`), references/workflow-definition.md (`### AGENT` — the `sessionId` row, observed live), references/optimization.md F3 and F5.",

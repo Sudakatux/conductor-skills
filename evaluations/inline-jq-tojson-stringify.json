@@ -1,6 +1,7 @@
 {
   "name": "Stringify Structured Task Output For Embedding in a Prompt",
   "skills": ["conductor"],
+  "topics": ["workflows"],
   "query": "I have an HTTP task that returns a JSON object. I need to embed that whole object as a string inside the next LLM_CHAT_COMPLETE's `message` field so the model can reason over it. What's the right way to do this in Conductor?",
   "expected_behavior": [
     "Step 1: Consult references/graaljs-gotchas.md and references/template-resolution.md",

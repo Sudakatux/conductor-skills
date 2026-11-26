@@ -1,9 +1,10 @@
 {
   "name": "Start Local Server and Create First Workflow",
   "skills": ["conductor"],
+  "topics": ["setup", "workflows", "operations"],
   "query": "Start a local Conductor server and create a simple hello world workflow",
   "expected_behavior": [
-    "Step 1: Check if `conductor` CLI is installed, install if missing",
+    "Step 1: Resolve the CLI per Rule 3 (`ensure-cli.sh` accepts any `conductor`; no `--need` for a local server), asking before installing if none exists",
     "Step 2: Start local server using `conductor server start`",
     "Step 3: Verify server is running with `conductor server status`",
     "Step 4: Test connectivity with `conductor workflow list` (should return empty list)",
@@ -21,6 +22,7 @@
     "Workflow definition is valid JSON written to a file first",
     "Workflow is registered before being started",
     "Execution status is checked and reported to user",
-    "Server start uses the CLI, not Docker or manual steps"
+    "Server start uses the CLI, not Docker or manual steps",
+    "No `conductor create-app`, Developer Edition default or newer-CLI requirement for a local OSS server"
   ]
 }

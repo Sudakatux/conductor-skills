@@ -1,6 +1,7 @@
 {
   "name": "Build a RAG Workflow",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm"],
   "query": "Create a RAG workflow that searches my Pinecone knowledge base and answers questions with sources",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (LLM_SEARCH_INDEX, LLM_CHAT_COMPLETE) and examples/llm-rag.md for the RAG pattern",

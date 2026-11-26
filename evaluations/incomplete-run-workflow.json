@@ -1,6 +1,7 @@
 {
   "name": "Incomplete Prompt — 'Run My Workflow' with No Name and No Input",
   "skills": ["conductor"],
+  "topics": ["workflows", "operations"],
   "query": "Run my workflow.",
   "expected_behavior": [
     "Step 1: Recognize the prompt is missing two essential pieces of information for `conductor workflow start`: (a) the workflow name (and possibly version), (b) the input payload.",

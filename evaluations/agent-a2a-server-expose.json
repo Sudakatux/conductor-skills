@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "A partner wants to call our `order_status` workflow — it has a HUMAN task for address confirmation — as an A2A agent from their own agent stack. What do I turn on, how do I register and expose it, where is the agent card, and how do I prove it works before handing them the URL? We're on a self-hosted server.",
   "expected_behavior": [
     "Step 1: Consult examples/agent-a2a-remote.md (section \"Expose a Conductor workflow (or deployed agent) as an A2A server\": `conductor.a2a.server.enabled=true`, base path `/api/a2a/workflow`, deployed agents at `/api/a2a/agent` when `agentspan.embedded=true`; register with `\"metadata\": {\"a2a\": {\"enabled\": true}}` via `POST /api/metadata/workflow?overwrite=true` because `conductor workflow create` drops `metadata`; card at `/api/a2a/workflow/<name>/.well-known/agent-card.json`; JSON-RPC `message/send`, `tasks/get`, `tasks/cancel`, `message/stream`; a HUMAN task surfaces as `input-required`), references/agents.md §12 (the same two gotchas), references/workflow-definition.md (`### AGENT` a2a mode, `### GET_AGENT_CARD`), references/cli-index.md (no `conductor deploy`), references/optimization.md F9 and D1.",

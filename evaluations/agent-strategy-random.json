@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "For a brainstorming bot I want three personas — `creative`, `practical` and `critical` — to riff on a product idea, but not in a predictable order every time; some randomness in who speaks next gives better ideas. It must still end. Python. Also: when would I NOT want random and just use round-robin?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `round_robin / random` rows: a random child per turn; `allowed_transitions` constrains who may follow whom; every open-ended strategy needs `max_turns` or `termination`), references/agents.md §4 and §11 (`record()` / `replay()`), references/optimization.md F1/F3, and WebFetch the Python SDK `docs/agents/` before pinning the install.",

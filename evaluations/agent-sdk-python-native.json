@@ -1,6 +1,7 @@
 {
   "name": "Scaffold a Native Python Conductor Agent (run locally, deploy for prod, with tests)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Scaffold a Python Conductor agent called `support_triage` that can look up an order by id and issue a refund. Use OpenAI. I want to run it locally first, then deploy it for prod, and I want tests.",
   "expected_behavior": [
     "Step 1: Consult SKILL.md (Rules 8–13), references/agents.md (decision table → path 2 'Conductor Agent via SDK'; lifecycle verbs; tool types; HITL contract; testing section), references/agent-sdks.md (Python install/import + native scaffold), and examples/agent-deploy-and-invoke.md. Optionally follow the `/conductor-scaffold-agent` procedure.",

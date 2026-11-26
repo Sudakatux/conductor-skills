@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "We have an agentskills.io skill folder at `./skills/release-notes` (a `SKILL.md`, a `scripts/collect_prs.py`, and a sub-agent file). I'd like to (a) try it once from the CLI with GPT-4o-mini, (b) deploy it so the UI can run it by name, and (c) call it as a tool from our existing Python `tech_lead` agent. Anything special about big SKILL.md files or the server?",
   "expected_behavior": [
     "Step 1: Consult references/cli-index.md (Skills table: `conductor skill run {path-or-name} \"prompt\" --model provider/model [--param k=v] [--workspace dir]`, `skill load {path} --model ...` deploys as an agent with framework `skill`, `skill serve {path-or-name}`, `skill register {path} [--version] [--model] [--agent-model name=model]`, `skill list/get/pull/delete`; requires `agentspan.skills.enabled=true`, off by default; after `load`, `conductor agent run --name {skill}` works), references/agents.md §2 (path 4c — skill agent) and §12 (`/api/skills/**` needs `agentspan.skills.enabled=true`), references/agent-sdks.md §7 (`skill(\"path\", model=M)` → `Agent`; `agent_tool(dg, description=...)`; `load_skills(dir)`), references/optimization.md F1, F3, F6, and SKILL.md Rule 13 (no `conductor deploy`).",

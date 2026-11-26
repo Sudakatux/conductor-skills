@@ -1,6 +1,7 @@
 {
   "name": "Prefer Built-in Conductor Tasks Over Custom Workers / HTTP for Non-LLM Operations",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm", "optimization"],
   "query": "I have two pieces of work I want to add to my Conductor pipeline. (1) After an order is placed, publish a JSON message about it to a Kafka topic `orders.created` on `kafka.internal:9092` with the order's ID as the message key. (2) At the end of the pipeline, render a markdown summary of the order into a PDF and store it. For (1), I was going to write a Python worker that uses kafka-python. For (2), I was going to call an HTTP service we run that wraps wkhtmltopdf. Help me wire these into the workflow, and also do a quick review of my intended approach against the Conductor optimization checklist — I want to know if I'm reinventing anything.",
   "expected_behavior": [
     "Step 1: Consult SKILL.md (Rule 6 — prefer built-in tasks; the table maps Kafka → KAFKA_PUBLISH and PDF → GENERATE_PDF), references/workflow-definition.md (KAFKA_PUBLISH and GENERATE_PDF sections), and references/optimization.md (rule E4)",

@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "Our Conductor runs at http://conductor.internal:8080/api \u2014 `conductor workflow list` works without any credentials. Set things up so our workflows can call Anthropic claude-sonnet-4-6.",
   "expected_behavior": [
     "Step 1: A server that answers without credentials is OSS (SKILL.md Rule 17) \u2014 optionally confirm with `python3 \"$CONDUCTOR_API\" server-info`",

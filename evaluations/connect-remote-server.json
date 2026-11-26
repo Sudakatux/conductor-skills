@@ -1,9 +1,10 @@
 {
   "name": "Connect to Remote Server with Auth",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "Connect me to my Conductor server at https://conductor.mycompany.com/api",
   "expected_behavior": [
-    "Step 1: Check if `conductor` CLI is installed, install if missing",
+    "Step 1: Resolve the CLI per Rule 3 (`ensure-cli.sh` accepts any `conductor`; no `--need` yet), asking before installing if none exists",
     "Step 2: Set CONDUCTOR_SERVER_URL to the provided URL",
     "Step 3: Test connectivity with `conductor workflow list`",
     "Step 4: If 401/403 error, inform user the server requires authentication",
@@ -20,6 +21,7 @@
     "Credentials are supplied through pre-injected environment variables, never literal command arguments or chat",
     "Connection is verified with a real API call after auth setup",
     "User is offered the current interactive `conductor config save --profile <name>` flow for future use",
-    "Plan does not include commands that would print auth keys, secrets, or tokens to stdout"
+    "Plan does not include commands that would print auth keys, secrets, or tokens to stdout",
+    "The flavor is probed without credentials before any connect step; `conductor create-app` is not run before that probe, and not at all if the server answers without auth (OSS)"
   ]
 }

@@ -1,6 +1,7 @@
 {
   "name": "Monitor Workflow and Signal a Task",
   "skills": ["conductor"],
+  "topics": ["workflows", "operations"],
   "query": "Check the status of my running workflows and complete the approval task in workflow abc-123",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available",

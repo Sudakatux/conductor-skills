@@ -1,6 +1,7 @@
 {
   "name": "Refuse the Broken `conductor deploy` CLI — Deploy via SDK deploy()",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "Deploy my Python agent with `conductor deploy -l python -a support_triage`. That's the command, right? Just run it.",
   "expected_behavior": [
     "Step 1: Consult SKILL.md Rule 13, references/cli-index.md (`## Agents` — the real `conductor agent` verbs and the note that `conductor deploy` must not be used), references/agents.md (lifecycle verbs: `deploy()` registers, `serve()` runs workers), references/agent-sdks.md, references/troubleshooting.md (`conductor deploy` module-not-found row), and examples/agent-deploy-and-invoke.md.",

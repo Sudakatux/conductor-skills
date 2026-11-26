@@ -8,22 +8,135 @@ On **OSS** Conductor an LLM provider is enabled by putting its key in the server
 | Model (integration resource) | An exact provider model id registered under the integration, e.g. `gpt-4o-mini` | `model: "gpt-4o-mini"` |
 | Access | Permission for an application / group / role on the integration | none — missing access surfaces as a 403 / access error at run time |
 
-The `conductor` CLI has **no integration commands** (and `conductor doctor` only checks *local* env vars — it says nothing about the cluster's integrations). Use the bundled script even when the CLI is installed: `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
+A `conductor` CLI new enough for `sh <skill-dir>/scripts/ensure-cli.sh --need integration` has `conductor integration add | list | models | add-model`. `integration add` asks for secrets with a **hidden prompt**, so the **user** runs it in their own terminal (§2); never the agent. Everything else here uses the bundled script (`conductor doctor` only checks *local* env vars, nothing on the cluster): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
 
 ## 1. Check what exists — before writing any LLM task for Orkes
 
 ```bash
-python3 "$CONDUCTOR_API" integration-list --category AI_MODEL     # names, types; secret config masked
-python3 "$CONDUCTOR_API" model-list --provider openai-prod          # models registered under one integration
+python3 "$CONDUCTOR_API" --profile <p> integration-list --category AI_MODEL   # what this application can see
+python3 "$CONDUCTOR_API" --profile <p> model-list --provider <integration>    # models under one integration
 ```
 
-- Suitable integration **and** model exist → use their names; tell the user which names the workflow will use.
-- Integration exists but lacks the model → add it to that integration (§3: `model-save` or `model-sync`); don't create a parallel integration.
-- Listing returns **403** → this application may not manage integrations; ask the user for the integration name to use (or for an admin to create it / grant rights) instead of guessing or creating one.
+The list shows only integrations **shared with this application** (the
+`default_app` application `conductor create-app` creates, or whichever key the
+profile holds). An empty list does not mean the cluster has none.
 
-## 2. Create the integration (persistent change — confirm with the user first)
+- A suitable integration **and** an enabled model are visible → use their names
+  (`llmProvider` = integration name, `model` = exact id) and tell the user which.
+- The integration is visible but lacks the model → `model-save --provider <integration> --model <id>`
+  (any signed-in identity may add a *new* model). If that returns 403, use §2.
+- Nothing suitable is visible → §2. The provider key must come from the user,
+  through a hidden prompt — never chat, command arguments, or an environment
+  variable exported just for the agent. Only when the user says the key is
+  **already** in the environment (CI, an admin key) use §3's script route.
 
-The key comes from an environment variable the user set securely (shell, CI secret store) — never chat, never a command-line value, never workflow JSON. `--config-env KEY=ENV_VAR` reads it; `--config KEY=VALUE` is for non-secret fields and refuses secret-looking keys.
+## 2. Missing integration — the user creates it
+
+The `default_app` application `conductor create-app` creates has `METADATA_MANAGER`
+(+ `WORKER`), so it may create integrations. What it must not do is see the
+provider key, so the **user** types it.
+
+1. **Pick the provider and model.** From the prompt ("use Claude", "with
+   GPT-4o"); otherwise ask once: *"Which LLM provider should this use —
+   Anthropic, OpenAI, …?"* Map it to the integration type (`anthropic`,
+   `openai`, `azure_openai`, `vertex_ai`, `aws_bedrock_anthropic`, `mistral`,
+   …; `integration-defs --category AI_MODEL` lists them). Pick the model id as in
+   §3 (current, from the provider's models page — not from memory).
+
+2. **Give the user the exact command, then stop and wait.** This message is
+   the one thing the user must act on, so it must contain the **complete,
+   copy-pasteable command** in its own fenced code block — never "run the
+   integration add command", never "the command above", never placeholders.
+   First run `sh <skill-dir>/scripts/ensure-cli.sh --need integration` (Rule 3:
+   ask before it installs anything). Fill in every value: the absolute
+   `CONDUCTOR_BIN` path it printed, the session's profile, the type and the exact model id. Send it
+   as plain text in your reply (not only inside a tool call, a summary or a
+   sub-agent's message), like this:
+
+   > I need an Anthropic integration on acme before I can build this. In a
+   > terminal of your own (not here), run:
+   >
+   > ```bash
+   > /Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model claude-sonnet-4-6
+   > ```
+   >
+   > It asks for your Anthropic API key without showing it, checks the key,
+   > creates the integration and adds claude-sonnet-4-6. Reply **done** when
+   > it prints ✓ (or paste its error).
+
+   Notes:
+   - Never run it yourself: it needs the user's terminal (it refuses without
+     one), and the key must not pass through you.
+   - Other types use the same command; it asks for each field the server
+     defines (Bedrock connection type, region, role ARN; Vertex service-account
+     file path; Azure endpoint). Preset known non-secret values in the command
+     with `--set field=value` so the user types less; secrets are refused there.
+   - The application owns what it creates. Add `--share-with <their email>`
+     only when you know it and the user wants to see it in the UI.
+
+3. **End your turn and wait for the user.** Don't start a background poll and
+   carry on, and don't build the workflow meanwhile — it depends on the
+   integration's name and the user may need help with the command. When they
+   reply **done** (or paste output), confirm:
+
+   ```bash
+   python3 "$CONDUCTOR_API" --profile <p> integration-wait --type anthropic --model claude-sonnet-4-6 --timeout 30
+   ```
+
+   - `{"ready": true, "llmProvider": "<name>", "model": "<id>"}` → use those
+     names and carry on with the original task.
+   - Exit 3 (`ready: false`) → read `next` and any output they pasted, say
+     what's missing in one line, repeat the exact command (or the fix), and
+     wait again.
+   - Their output shows HTTP 403 → step 4.
+
+4. **Fall back to manual steps in the UI** when the user has no terminal on
+   the machine that holds the profile (a cloud or web agent, a remote
+   container), prefers the UI, or `integration add` reports **HTTP 403** (the
+   application lacks the role — e.g. it was approved before the role change:
+   on Developer Edition, with the user's OK, rerun `conductor create-app --yes`
+   (same `--server`, `--profile`; without `--yes` it fails `profile_exists`) and
+   **Approve**; otherwise use the UI). Don't generate or guess a link to a UI page — describe the steps in
+   words, naming the cluster the profile points to (e.g.
+   acme.orkesconductor.com) and the profile's application:
+
+   > In the Conductor UI on **acme.orkesconductor.com**:
+   > 1. Go to **Integrations → New Integration → Anthropic**, enter your API key and save.
+   > 2. Open that integration and **Add Model** → **claude-sonnet-4-6**.
+   > 3. Share it with the **default_app** application: **Access Control → Applications → default_app → Integration** tab, and turn on that model. <!-- share-step: drop once the integrations page shares with the calling application itself -->
+   >
+   > Reply **done** when you've finished.
+
+   Then end your turn and wait as in step 3.
+
+5. **Stop** when neither works — `integration-wait` exits 4, or the user can't
+   create integrations in the UI either (no **New Integration** button, a
+   permission error): *"Neither the default_app application nor your account
+   can create integrations on this cluster. Ask an admin to add an Anthropic
+   integration with the model claude-sonnet-4-6 and share it with the
+   default_app application, then tell me and I'll continue."*
+
+Never ask for the key in chat. If the user pastes one anyway, Rule 5 applies
+(treat it as compromised, don't use it, recommend rotating it).
+
+## 3. Models
+
+### Choosing the model
+
+Pick the model id from the provider's **current** models page (WebSearch /
+WebFetch, e.g. "Anthropic models overview") — never from memory; they change
+monthly. Use the latest suitable one as the workflow's default `model`, and say
+which in one line. The id must exactly match the provider's
+(`claude-sonnet-4-6`, `gpt-4o-mini`). For a vector DB the "model" is the index
+name. Azure OpenAI models are the user's *deployment names*: ask for them.
+Bedrock ids must also be enabled in the user's AWS account/region.
+
+### With admin or CI credentials only: create the integration from the script
+
+`integration-save` works only for an identity allowed to create integrations
+(an admin, or an application an admin gave `METADATA_MANAGER`), and only with
+the key already in that process's environment (a CI secret store). It is never
+the fix for an interactive Launch Pad / `conductor create-app` user — that's §2.
 
 ```bash
 python3 "$CONDUCTOR_API" integration-save --name openai-prod --type openai \
@@ -43,9 +156,9 @@ python3 "$CONDUCTOR_API" integration-save --name openai-prod --type openai \
 
 Secret-looking fields (`*key*`, `*secret*`, `*token*`, `*password*`, `*credential*`, `file`) are only accepted via `--config-env`, e.g. Vertex `--config-env file=VERTEX_SA_JSON` where the variable holds the service-account JSON. For any type not listed, or to confirm field names on this cluster, run `python3 "$CONDUCTOR_API" integration-defs --category AI_MODEL`. The `type` cannot be changed after creation. `integration-save` refuses an existing `--name`: `--overwrite` replaces the **whole** configuration, so pass every secret field again with `--config-env` or it is cleared.
 
-## 3. Register the models — all of them, discovered live
+Registering models from the script (same admin/CI identity, key in the environment):
 
-When creating an AI integration, register **every model the key can use**, not just the one the current workflow needs, so later workflows and agents don't hit "model not found". Discover models live — never from memory, they change monthly.
+When creating an AI integration from the script, register **every model the key can use**, not just the one the current workflow needs, so later workflows and agents don't hit "model not found". Discover models live — never from memory, they change monthly.
 
 **Providers with a model-list API** (`openai`, `anthropic`, `mistral`, `cohere`, `grok`, `ollama`, and Gemini-API keys via `--source gemini`): ask the provider with the same key, then register the lot.
 
@@ -64,9 +177,9 @@ Single model: `python3 "$CONDUCTOR_API" model-save --provider openai-prod --mode
 
 ## 4. Grant access
 
-- The identity that **created** the integration gets full access automatically — when the same application key creates the integration and runs the workflows, nothing else is needed.
+- The identity that **created** the integration gets full access automatically. With `conductor integration add` (§2) that is the profile's application (`default_app` unless `conductor create-app --name` chose another), so its workflows can use it at once; the user sees it in the UI only if it was shared back (`--share-with`) or they are an admin. When the user creates it in the UI (§2 step 4, manual steps), the user owns it, so it must be **shared** with the application: **Access Control → Applications → default_app → Integration** tab, toggle the models. <!-- share-step -->
 - Other groups / roles / users: `python3 "$CONDUCTOR_API" grant-access --subject-type group --subject-id <group> --target-id openai-prod --access READ,EXECUTE` (`--target-type` defaults to `INTEGRATION_PROVIDER`).
-- Another **application** (the identity behind a different access key): grant it in the UI — **Access Control → Applications → \<app\> → Integration** tab, toggle the models — and confirm with `access-list`. Don't guess an API subject id for an application.
+- Don't guess an API subject id for an application; share it in the UI and confirm with `integration-wait` (it only succeeds once the application can see the model).
 - Check: `python3 "$CONDUCTOR_API" access-list --target-id openai-prod`.
 
 ## 5. Use it in a workflow
@@ -134,13 +247,15 @@ OSS has no prompt registry: prompts are always literal text and `prompt-*` comma
 | Symptom on Orkes | Cause | Fix |
 |---|---|---|
 | LLM task fails with integration / provider not found | `llmProvider` is the provider *type* (`openai`) or a typo, not an existing integration name | `integration-list`, use the exact name |
-| Model not found / not enabled | Model not registered under that integration, or `--disabled` | `model-save` |
-| 403 / access denied on the LLM task | The running application has no access to the integration | §4 |
+| Model not found / not enabled | Model not registered under that integration, or `--disabled` | `model-save`; on 403, the user adds it in the UI (§2) |
+| 403 / access denied on the LLM task | The running application has no access to the integration | The user shares it with the application (§4), then `integration-wait` |
 | "this server does not require auth, so it is OSS" / integration endpoints 404 | Server is OSS — integration APIs don't exist there (a 404 for one name on Enterprise = that integration doesn't exist) | OSS uses server env keys — see [setup.md](setup.md) Step 5 |
 | *"Prompt … is not associated with integration … and model …"* | Literal text in `instructions` / `promptName` / image `prompt` without `allowRawPrompts`, or the template isn't associated with that `integration:model` | Use a template name and `prompt-save … --model <integration>:<model>`, or set `allowRawPrompts: true` (§6) |
 | Registration fails: *"taskReferenceName: x … is not defined"* for prompt text | `${x}` template placeholder written inline in the workflow | Move the text into a saved template, or use a real expression (§6) |
-| `integration-list` returns 403 | This application can't manage integrations | Ask for the integration name to use, or an admin to create it / grant rights (§1) |
-| `integration-save`: "already exists" | Name taken | Use it (add models with `model-sync`), or `--overwrite` with all secrets re-supplied |
+| `integration-list` returns 403 / `integration-wait` exits 4 | This application can't list integrations | Stop: ask an admin to create and share the integration (§2 step 5) |
+| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | On Developer Edition, with the user's OK, re-run `conductor create-app --yes --server <url> --profile <p>` → **Approve**; elsewhere (or instead) the manual UI steps (§2 step 4) |
+| `integration-save` returns 403 | This identity can't create integrations | §2: `conductor integration add` in the user's terminal, or the manual UI steps |
+| `integration-save`: "already exists" | Name taken | Use it (add models with `model-save`), or, with admin/CI credentials, `--overwrite` with all secrets re-supplied |
 | A `*-env` flag says the variable isn't set | Shell expanded `$VAR` into a value, or the variable isn't exported | Pass the bare name; ask the user to export it |
 
-Never work around a missing integration with an `HTTP` task to the provider API (rule B10) — create or fix the integration.
+Never work around a missing integration with an `HTTP` task to the provider API (rule B10) — have the user create it (§2).

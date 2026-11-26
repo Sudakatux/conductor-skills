@@ -7,11 +7,12 @@ set -euo pipefail
 # https://github.com/conductor-oss/conductor-skills
 # ─────────────────────────────────────────────────────────────────────────────
 
-VERSION="1.8.0"
+VERSION="2.0.0"
 # Per-file fetches and the upgrade-check both read from `main`. Releases are
 # rolled by bumping VERSION on main, not by tagging — the install scripts ride
 # along with whatever main is serving.
-REPO_BASE="https://raw.githubusercontent.com/conductor-oss/conductor-skills/main"
+# FORK ONLY: serve files from the fork branch (drop before upstreaming).
+REPO_BASE="${CONDUCTOR_SKILLS_REPO_BASE:-https://raw.githubusercontent.com/Sudakatux/conductor-skills/flavor-router}"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -105,6 +106,8 @@ SKILL_FILES=(
   "skills/conductor/examples/agents/typescript/openai-agents-bridge.ts"
   "skills/conductor/examples/agents/typescript/vercel-ai-tools.ts"
   "skills/conductor/examples/agents/typescript/weather-agent.ts"
+  "skills/conductor/scripts/ensure-cli.sh"
+  "skills/conductor/scripts/ensure-cli.ps1"
   "skills/conductor/scripts/conductor_api.py"
   "skills/conductor/scripts/test_conductor_api.py"
 )
@@ -615,7 +618,8 @@ except json.JSONDecodeError as e:
 
 mkts = s.setdefault('extraKnownMarketplaces', {})
 mkts['conductor-skills'] = {
-    'source': {'source': 'github', 'repo': 'conductor-oss/conductor-skills'}
+    # FORK ONLY: the fork branch (drop before upstreaming).
+    'source': {'source': 'github', 'repo': 'Sudakatux/conductor-skills', 'ref': 'flavor-router'}
 }
 enabled = s.setdefault('enabledPlugins', {})
 enabled['conductor@conductor-skills'] = True
@@ -1298,8 +1302,8 @@ main() {
     echo "  Ask your agent:"
   fi
   echo ""
-  echo '    "Set up both my Conductor profiles: developer and localhost.'
-  echo '     Use Developer Edition by default."'
+  echo '    "Connect me to Conductor with conductor create-app.'
+  echo '     Use Developer Edition unless I give you another server URL."'
   echo ""
   echo -e "  ${BOLD}[default] developer${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"
   echo -e "  ${BOLD}[switch]  localhost${NC}  ${CYAN}http://localhost:8080/api${NC}"

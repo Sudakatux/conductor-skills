@@ -1,6 +1,7 @@
 {
   "name": "Schedule a Workflow to Run Daily",
   "skills": ["conductor"],
+  "topics": ["schedules", "workflows", "operations", "orkes"],
   "query": "Schedule the cleanup-workflow to run every day at 2am",
   "expected_behavior": [
     "Step 1: Consult references/schedules.md for the schedule JSON schema and Quartz cron format",

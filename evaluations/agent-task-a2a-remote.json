@@ -1,6 +1,7 @@
 {
   "name": "Call a Partner's Remote A2A Agent with Bearer Auth, Handle input-required in the Same Conversation, Discover Its Card",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "A partner exposes an A2A agent at https://agents.partner.example/a2a/legal-review and it needs a bearer token. From my `contract_intake` workflow, send it the contract summary; if it comes back asking a follow-up question, answer it from our `clarifications` input in the same conversation. Also — how do I find out what that agent can do before I call it?",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### AGENT` a2a mode, `### GET_AGENT_CARD`), references/agents.md (A2A states, callback config), examples/agent-a2a-remote.md, and references/optimization.md rules D1 and F9.",

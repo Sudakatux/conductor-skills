@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "A vendor's A2A agent takes up to 20 minutes per job. Its agent card says `capabilities.streaming: true` and it supports push notifications. Polling it every 5 seconds for 20 minutes from my `claims_review` workflow feels wasteful — what are my options on the AGENT task, how do I authenticate, and how do I keep only the last 3 messages of history?",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### AGENT` a2a mode inputs: `streaming`, `pushNotification`, `pushBackstopPollSeconds`, `historyLength`, `headers`, `pollIntervalSeconds`, `maxDurationSeconds`; `### GET_AGENT_CARD`), examples/agent-a2a-remote.md, and references/optimization.md F9.",
