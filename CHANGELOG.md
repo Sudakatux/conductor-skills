@@ -37,6 +37,12 @@ CLIs and `CONDUCTOR_*` environment variables keep working.
 
 ### Added
 
+- `conductor_api.py worker-env --profile <p> --out <dir>/.env [--overwrite]`:
+  writes a saved profile's `CONDUCTOR_SERVER_URL`, `CONDUCTOR_AUTH_KEY` and
+  `CONDUCTOR_AUTH_SECRET` into a worker's `.env` (atomic, 0600, other lines
+  kept, `.gitignore` updated in a git repo) and prints only the names. On
+  Orkes, the skill offers it (asking first) instead of having anyone copy the
+  key and secret out of the profile YAML, and never reads the `.env` back.
 - Evals: `"topics"` per eval, so the runner sends SKILL.md plus only the
   references and examples an eval needs (largest per-eval context about 210k
   chars, down from 338k). `validate_plugin.py` checks topics and budgets the

@@ -66,6 +66,7 @@ Task statuses for signaling: `COMPLETED`, `FAILED`, `FAILED_WITH_TERMINAL_ERROR`
 | Poll | `conductor task poll {taskType} --count 5` |
 | Update execution | `conductor task update-execution --workflow-id {id} --task-ref-name {ref} --status COMPLETED --output '{...}'` |
 | Queue size | `conductor task queue-size --task-type {type}` |
+| Worker `.env` from a saved profile (Orkes; ask first; never read it back: [workers.md](workers.md#worker-credentials-from-a-saved-profile-orkes)) | no CLI verb — bundled script: `python3 "$CONDUCTOR_API" --profile {profile} worker-env --out {dir}/.env` |
 
 ## Schedules
 

@@ -40,6 +40,38 @@ All official SDKs live under the `conductor-oss` GitHub org with the `*-sdk` nam
 
 All SDKs connect via the same env vars: `CONDUCTOR_SERVER_URL` (API base ending in `/api`), `CONDUCTOR_AUTH_KEY`, `CONDUCTOR_AUTH_SECRET`. Inject credential values through the worker's secret store or environment; never put them in source, workflow input, chat, or CLI arguments.
 
+### Worker credentials from a saved profile (Orkes)
+
+Only on Orkes (SKILL.md Rule 17), and only when a working saved profile exists
+(on Developer Edition there always is one after `conductor create-app`). When a
+worker needs Conductor credentials, **offer** to write that profile's server URL,
+key and secret into a `.env` next to the worker, without you seeing them, and
+wait for the user's yes before running it:
+
+> Want me to write your `developer` profile's Conductor credentials into
+> `./order-worker/.env` for the worker? The values go straight from the profile
+> to the file; I won't see or print them.
+
+```bash
+python3 "$CONDUCTOR_API" --profile developer worker-env --out ./order-worker/.env   # --overwrite to replace existing CONDUCTOR_* lines
+```
+
+It writes `CONDUCTOR_SERVER_URL`, `CONDUCTOR_AUTH_KEY` and `CONDUCTOR_AUTH_SECRET`
+(mode 0600), keeps other lines, prints only the names and the path, and adds the
+file to `.gitignore` inside a git repo. It refuses a profile without a key and
+secret (token-only, OSS). Then:
+
+- Never read, `cat`, `grep`, `source`-and-echo or print the `.env` (it's like the
+  profile YAML, Rule 5), and never tell the user to open the profile YAML and
+  copy the key and secret by hand.
+- Tell the user, as information, that the `.env` holds the variables the SDK
+  reads and how it's usually loaded: `set -a; . ./.env; set +a` in the shell
+  that starts the worker, or the language's dotenv support (`python-dotenv`,
+  `dotenv` for Node, …).
+- **OSS:** no offer; workers need only `CONDUCTOR_SERVER_URL`. **No saved
+  profile** (env vars, CI): no offer; the credentials already come from that
+  environment.
+
 > **Why the WebFetch step matters.** The Python/JS/Java/Go patterns below are stable across recent versions but the API surface still drifts (e.g. Python switched runner classes; Java's `@WorkerTask` annotation gained options; Go module path moved org without changing the import). The .NET / Ruby / Rust SDKs are younger and their APIs shift more — fetch the README before scaffolding rather than trust an example below.
 
 ---

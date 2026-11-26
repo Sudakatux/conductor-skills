@@ -40,6 +40,7 @@ The fallback covers core CRUD and execution — not all CLI features. Limitation
 | Signal task (sync) | `conductor task signal-sync ...` | `python3 "$CONDUCTOR_API" signal-task-sync --workflow-id {id} --task-ref {ref} --status COMPLETED --output '{...}'` |
 | Poll task | `conductor task poll {type} --count 5` | `python3 "$CONDUCTOR_API" poll-task --task-type {type} --count 5` |
 | Queue size | `conductor task queue-size --task-type {type}` | `python3 "$CONDUCTOR_API" queue-size --task-type {type}` |
+| Worker `.env` from a saved profile (Orkes; ask first; values never printed or read back; [workers.md](workers.md#worker-credentials-from-a-saved-profile-orkes)) | — (no CLI verb) | `python3 "$CONDUCTOR_API" --profile {profile} worker-env --out {dir}/.env [--overwrite]` |
 
 ## Agent verbs (also usable alongside the CLI — SKILL.md `allowed-tools` has no `curl`)
 
