@@ -22,7 +22,7 @@ $SCRIPT_VERSION = "2.0.0"
 # Per-file fetches and the upgrade-check both read from `main`. Releases are
 # rolled by bumping VERSION on main, not by tagging.
 # FORK ONLY: serve files from the fork branch (drop before upstreaming).
-$REPO_BASE = "https://raw.githubusercontent.com/Sudakatux/conductor-skills/conductor-login-setup"
+$REPO_BASE = "https://raw.githubusercontent.com/Sudakatux/conductor-skills/flavor-router"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -523,7 +523,7 @@ function Install-Claude {
             source = 'github'
             # FORK ONLY: the fork branch (drop before upstreaming).
             repo   = 'Sudakatux/conductor-skills'
-            ref    = 'conductor-login-setup'
+            ref    = 'flavor-router'
         }
     }
 

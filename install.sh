@@ -12,7 +12,7 @@ VERSION="2.0.0"
 # rolled by bumping VERSION on main, not by tagging — the install scripts ride
 # along with whatever main is serving.
 # FORK ONLY: serve files from the fork branch (drop before upstreaming).
-REPO_BASE="${CONDUCTOR_SKILLS_REPO_BASE:-https://raw.githubusercontent.com/Sudakatux/conductor-skills/conductor-login-setup}"
+REPO_BASE="${CONDUCTOR_SKILLS_REPO_BASE:-https://raw.githubusercontent.com/Sudakatux/conductor-skills/flavor-router}"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -619,7 +619,7 @@ except json.JSONDecodeError as e:
 mkts = s.setdefault('extraKnownMarketplaces', {})
 mkts['conductor-skills'] = {
     # FORK ONLY: the fork branch (drop before upstreaming).
-    'source': {'source': 'github', 'repo': 'Sudakatux/conductor-skills', 'ref': 'conductor-login-setup'}
+    'source': {'source': 'github', 'repo': 'Sudakatux/conductor-skills', 'ref': 'flavor-router'}
 }
 enabled = s.setdefault('enabledPlugins', {})
 enabled['conductor@conductor-skills'] = True
