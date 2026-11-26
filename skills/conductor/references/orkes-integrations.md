@@ -8,7 +8,7 @@ On **OSS** Conductor an LLM provider is enabled by putting its key in the server
 | Model (integration resource) | An exact provider model id registered under the integration, e.g. `gpt-4o-mini` | `model: "gpt-4o-mini"` |
 | Access | Permission for an application / group / role on the integration | none — missing access surfaces as a 403 / access error at run time |
 
-The `conductor` CLI that `scripts/ensure-cli.sh` installs has `conductor integration add | list | models | add-model`. `integration add` asks for secrets with a **hidden prompt**, so the **user** runs it in their own terminal (§2); never the agent. Everything else here uses the bundled script (`conductor doctor` only checks *local* env vars, nothing on the cluster): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
+A `conductor` CLI new enough for `sh <skill-dir>/scripts/ensure-cli.sh --need integration` has `conductor integration add | list | models | add-model`. `integration add` asks for secrets with a **hidden prompt**, so the **user** runs it in their own terminal (§2); never the agent. Everything else here uses the bundled script (`conductor doctor` only checks *local* env vars, nothing on the cluster): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
 
 ## 1. Check what exists — before writing any LLM task for Orkes
 
@@ -47,8 +47,9 @@ provider key, so the **user** types it.
    the one thing the user must act on, so it must contain the **complete,
    copy-pasteable command** in its own fenced code block — never "run the
    integration add command", never "the command above", never placeholders.
-   Fill in every value: the absolute `CONDUCTOR_BIN` path `ensure-cli.sh`
-   printed, the session's profile, the type and the exact model id. Send it
+   First run `sh <skill-dir>/scripts/ensure-cli.sh --need integration` (Rule 3:
+   ask before it installs anything). Fill in every value: the absolute
+   `CONDUCTOR_BIN` path it printed, the session's profile, the type and the exact model id. Send it
    as plain text in your reply (not only inside a tool call, a summary or a
    sub-agent's message), like this:
 
@@ -93,9 +94,9 @@ provider key, so the **user** types it.
    the machine that holds the profile (a cloud or web agent, a remote
    container), prefers the UI, or `integration add` reports **HTTP 403** (the
    application lacks the role — e.g. it was approved before the role change:
-   with the user's OK, rerun `conductor create-app --yes` (same `--server`,
-   `--profile`; without `--yes` it fails `profile_exists`) and **Approve**;
-   otherwise use the UI). Don't generate or guess a link to a UI page — describe the steps in
+   on Developer Edition, with the user's OK, rerun `conductor create-app --yes`
+   (same `--server`, `--profile`; without `--yes` it fails `profile_exists`) and
+   **Approve**; otherwise use the UI). Don't generate or guess a link to a UI page — describe the steps in
    words, naming the cluster the profile points to (e.g.
    acme.orkesconductor.com) and the profile's application:
 
@@ -252,7 +253,7 @@ OSS has no prompt registry: prompts are always literal text and `prompt-*` comma
 | *"Prompt … is not associated with integration … and model …"* | Literal text in `instructions` / `promptName` / image `prompt` without `allowRawPrompts`, or the template isn't associated with that `integration:model` | Use a template name and `prompt-save … --model <integration>:<model>`, or set `allowRawPrompts: true` (§6) |
 | Registration fails: *"taskReferenceName: x … is not defined"* for prompt text | `${x}` template placeholder written inline in the workflow | Move the text into a saved template, or use a real expression (§6) |
 | `integration-list` returns 403 / `integration-wait` exits 4 | This application can't list integrations | Stop: ask an admin to create and share the integration (§2 step 5) |
-| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | With the user's OK, re-run `conductor create-app --yes --server <url> --profile <p>` → **Approve**, or the manual UI steps (§2 step 4) |
+| `conductor integration add`: HTTP 403 | The profile's application lacks `METADATA_MANAGER` (approved before the role change, or the server doesn't allow it) | On Developer Edition, with the user's OK, re-run `conductor create-app --yes --server <url> --profile <p>` → **Approve**; elsewhere (or instead) the manual UI steps (§2 step 4) |
 | `integration-save` returns 403 | This identity can't create integrations | §2: `conductor integration add` in the user's terminal, or the manual UI steps |
 | `integration-save`: "already exists" | Name taken | Use it (add models with `model-save`), or, with admin/CI credentials, `--overwrite` with all secrets re-supplied |
 | A `*-env` flag says the variable isn't set | Shell expanded `$VAR` into a value, or the variable isn't exported | Pass the bare name; ask the user to export it |

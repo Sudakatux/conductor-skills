@@ -13,7 +13,8 @@
 |---------|--------------|-----|
 | `conductor: command not found` | CLI not installed | `sh <skill-dir>/scripts/ensure-cli.sh`, then SKILL.md Rule 3 (ask before `--install`; use the printed `CONDUCTOR_BIN`). |
 | `Error: create-app failed (<code>)` | Connect step failed | [setup.md → If create-app fails](setup.md#if-create-app-fails) |
-| `unknown command "create-app"` / `"integration"` | CLI too old | Same as above: Rule 3. |
+| `create-app failed (no_launchpad)` | The server isn't Orkes Developer Edition (no Launch Pad) | Don't retry: [setup.md → Manual key path](setup.md#manual-key-path) |
+| `unknown command "create-app"` / `"integration"` | CLI too old for that command | `ensure-cli.sh --need create-app` (or `--need integration`), then Rule 3. Other commands work with the old CLI. |
 | `Connection refused` / `URLError` | Server not running, or wrong URL | Verify `CONDUCTOR_SERVER_URL`. A remote root/UI URL normally needs `/api` appended exactly once. For local servers run `conductor server status`. |
 | `401 Unauthorized` | Missing, incomplete, or invalid auth | Securely inject either `CONDUCTOR_AUTH_TOKEN` or both `CONDUCTOR_AUTH_KEY` + `CONDUCTOR_AUTH_SECRET`; the CLI, SDKs, and Python fallback exchange an Orkes key pair automatically. Never print the values. Re-run `conductor workflow list` to confirm. |
 | `403 Forbidden` | Token valid but lacks permissions | Confirm with the user that the credentials have access to the target workflow/namespace. |
