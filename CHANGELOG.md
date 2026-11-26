@@ -23,7 +23,9 @@ CLIs and `CONDUCTOR_*` environment variables keep working.
   creates an access key in the UI and saves it with `conductor config save`.
 - **The CLI.** Resolution is unchanged (on PATH, else `npx --yes`, a global npm
   install only after asking, else the Python fallback); `npx` now passes
-  `--yes`, never `sudo`, and an nvm/asdf hint comes before the fallback. A
+  `--yes`, never `sudo`, a session that will run several commands is offered
+  one global install instead of npx on every call (declining keeps npx), and an
+  nvm/asdf hint comes before the fallback. A
   newer CLI is needed only for `create-app` and `conductor integration add`:
   the agent checks `<command> --help` right before running them and, if it's
   too old, asks and runs `conductor update`.
