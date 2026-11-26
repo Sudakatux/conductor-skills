@@ -316,7 +316,6 @@ def check_remote_setup_contract() -> None:
     if setup.exists():
         contents = setup.read_text()
         for required in (
-            "scripts/ensure-cli.sh",
             "create-app --server",
             "?setup=key",
             "conductor config save --profile",
@@ -325,7 +324,7 @@ def check_remote_setup_contract() -> None:
             "If create-app fails",
             "## Connect to a server",
             "### 3. Find the flavor, before connecting",
-            "--need create-app",
+            "create-app --help",
             "no_launchpad",
             "Manual key path",
         ):

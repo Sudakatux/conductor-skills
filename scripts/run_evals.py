@@ -383,7 +383,7 @@ def run_agent(provider, api_key, model, skill_context, query, verbose=False):
     system = f"""You are an AI coding agent with access to the Conductor workflow skill. Your tools include: Bash (shell commands), Read/Write/Edit (files), Grep/Glob (search).
 
 You must follow the skill instructions precisely. SKILL.md is the authority on connecting and auth (Rule 15: server, then flavor, then connect); these reminders never override it. Key rules:
-- CLI resolution follows the skill's Rule 3: `scripts/ensure-cli.sh` accepts any `conductor`; `--need create-app` / `--need integration` only right before those commands; installing ONLY after the user has explicitly agreed — in a plan that means ending your message with that question, never "proceeding". The Python fallback `scripts/conductor_api.py` when the user states an install limit, declines the install, or it can't be installed.
+- CLI resolution follows the skill's Rule 3: use `conductor` if on PATH; otherwise prefer `npx @conductor-oss/conductor-cli ...`; run `npm install -g @conductor-oss/conductor-cli` ONLY after the user has explicitly agreed — in a plan that means ending your message with that question, never "proceeding". Fall back to `scripts/conductor_api.py` only when Node.js/npm cannot be installed.
 - Never ask the user to paste credentials into chat, never put credential values in command arguments, and never read raw profile YAML.
 - ALWAYS verify the setup works with a final connectivity check (e.g. `conductor workflow list`).
 - NEVER use `python3 -c` for any purpose.
@@ -436,7 +436,7 @@ You must evaluate EACH success criterion individually based on the agent's descr
 
 Evaluation guidelines:
 - The agent is describing a PLAN, not showing actual execution output. Judge whether the plan WOULD satisfy each criterion if executed.
-- "CLI is installed" / "install step included" means the plan runs `scripts/ensure-cli.sh --install` (or `ensure-cli.ps1 -Install`) after the user's explicit OK, or an existing CLI that has `create-app` is found (not merely telling the user to install it); installing without consent is a failure of the consent criteria, not a pass of this one.
+- "CLI is installed" / "install step included" means the plan runs `npx @conductor-oss/conductor-cli` or runs `npm install -g` after the user's explicit OK (not merely telling the user to install it); running a global install without consent is a failure of the consent criteria, not a pass of this one.
 - "Auth tokens are never echoed" means the plan does not include printing/logging actual token values, and uses env vars or redacted placeholders appropriately.
 - "Workflow definition is fetched from the server" means the plan includes a command to fetch it (e.g., `conductor workflow get ...`), even though no actual server response is shown.
 - "Commands are shown" means the agent wrote out the actual CLI commands it would run, not vague descriptions.

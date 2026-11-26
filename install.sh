@@ -12,7 +12,7 @@ VERSION="2.0.0"
 # rolled by bumping VERSION on main, not by tagging — the install scripts ride
 # along with whatever main is serving.
 # FORK ONLY: serve files from the fork branch (drop before upstreaming).
-REPO_BASE="${CONDUCTOR_SKILLS_REPO_BASE:-https://raw.githubusercontent.com/Sudakatux/conductor-skills/flavor-router}"
+REPO_BASE="${CONDUCTOR_SKILLS_REPO_BASE:-https://raw.githubusercontent.com/Sudakatux/conductor-skills/no-ensure-cli}"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -106,8 +106,6 @@ SKILL_FILES=(
   "skills/conductor/examples/agents/typescript/openai-agents-bridge.ts"
   "skills/conductor/examples/agents/typescript/vercel-ai-tools.ts"
   "skills/conductor/examples/agents/typescript/weather-agent.ts"
-  "skills/conductor/scripts/ensure-cli.sh"
-  "skills/conductor/scripts/ensure-cli.ps1"
   "skills/conductor/scripts/conductor_api.py"
   "skills/conductor/scripts/test_conductor_api.py"
 )
@@ -619,7 +617,7 @@ except json.JSONDecodeError as e:
 mkts = s.setdefault('extraKnownMarketplaces', {})
 mkts['conductor-skills'] = {
     # FORK ONLY: the fork branch (drop before upstreaming).
-    'source': {'source': 'github', 'repo': 'Sudakatux/conductor-skills', 'ref': 'flavor-router'}
+    'source': {'source': 'github', 'repo': 'Sudakatux/conductor-skills', 'ref': 'no-ensure-cli'}
 }
 enabled = s.setdefault('enabledPlugins', {})
 enabled['conductor@conductor-skills'] = True

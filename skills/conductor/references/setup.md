@@ -9,12 +9,16 @@ its flavor, then connect the way that flavor needs.
 ### 1. Resolve the CLI
 
 ```bash
-sh <skill-dir>/scripts/ensure-cli.sh   # Windows: powershell -NoProfile -ExecutionPolicy Bypass -File <skill-dir>\scripts\ensure-cli.ps1
+conductor --version                                  # on PATH? any version will do here
+npx --yes @conductor-oss/conductor-cli --version     # otherwise, one-off (no install)
+# FORK ONLY (drop before upstreaming): npx --yes github:Sudakatux/conductor-cli#conductor-login --version
 ```
 
-Any `conductor` passes here. Use the printed `CONDUCTOR_BIN` for every later
-command. Exit 3 (none found), installing, a checksum mismatch, the Python
-fallback and single-file installs without the script: SKILL.md Rule 3.
+Any `conductor` works until you need `create-app` or `integration add`; check
+for those right before running them (SKILL.md Rule 3.5). Global install after
+asking, the nvm hint and the Python fallback: SKILL.md Rule 3. The commands
+below say `conductor`; when you run the CLI through npx, use that prefix
+instead, every time.
 
 ### 2. Pick the server
 
@@ -26,12 +30,12 @@ The first row that matches wins.
 | 2 | `CONDUCTOR_SERVER_URL` is set | that URL | none: the env var is the connection (check names only, Rule 5) |
 | 3 | `conductor config list` shows exactly one profile and `--profile <it> whoami` works | that profile's server | that name |
 | 4 | Several profiles | `developer` if it exists and `whoami` works; say *"Using your `developer` profile; name another to switch."* Otherwise ask which one (one question, Rule 14) | that name |
-| 5 | A local server answers (`"$CONDUCTOR_BIN" server status`, or `http://localhost:8080/api`) | `http://localhost:8080/api` (OSS) | `localhost` if it exists, else none |
+| 5 | A local server answers (`conductor server status`, or `http://localhost:8080/api`) | `http://localhost:8080/api` (OSS) | `localhost` if it exists, else none |
 | 6 | Nothing | `https://developer.orkescloud.com` | `developer` |
 
 ```bash
-"$CONDUCTOR_BIN" config list                      # names only; never read the YAML
-"$CONDUCTOR_BIN" --profile developer whoami
+conductor config list                      # names only; never read the YAML
+conductor --profile developer whoami
 ```
 
 Never fall back to `developer` silently: when row 6 picks it, say *"Using
@@ -58,7 +62,7 @@ No auth, no `create-app`, and any `conductor` works.
 
 ```bash
 export CONDUCTOR_SERVER_URL="https://conductor.example.com/api"   # skip when using a profile or the local server
-"$CONDUCTOR_BIN" workflow list --json
+conductor workflow list --json
 ```
 
 To remember it, the **user** runs `conductor config save --profile <name>` in
@@ -79,8 +83,8 @@ Take the first that applies:
    and you use the [manual key path](#manual-key-path).
 
 ```bash
-sh <skill-dir>/scripts/ensure-cli.sh --need create-app   # Rule 3: ask before installing
-"$CONDUCTOR_BIN" create-app --server https://developer.orkescloud.com --profile developer
+conductor create-app --help >/dev/null    # Rule 3.5: fails = too old; ask, then update
+conductor create-app --server https://developer.orkescloud.com --profile developer
 # --name <app> (default default_app); --yes replaces a profile, only if the user agrees
 ```
 
@@ -101,8 +105,8 @@ line.** Anything else: [If create-app fails](#if-create-app-fails).
 ### 6. Verify, then do the task
 
 ```bash
-"$CONDUCTOR_BIN" --profile developer whoami
-"$CONDUCTOR_BIN" --profile developer workflow list --json
+conductor --profile developer whoami
+conductor --profile developer workflow list --json
 ```
 
 Continue the original request with the same `--profile` (or env vars). Don't
@@ -133,10 +137,11 @@ never fall back to asking for a key in chat.
 A permission prompt the user declines, or an auto-mode safety check, can stop
 you from running `create-app` (it creates an access key on the cluster). Don't
 retry it, rephrase it, switch to another way of connecting, or carry on with
-the task. Reply with the exact command, filled in, for the user to run:
+the task. Reply with the exact command, filled in, for the user to run (with the npx
+prefix if that's how you ran it):
 
 ```bash
-/Users/me/.local/bin/conductor create-app --server https://developer.orkescloud.com --profile developer
+conductor create-app --server https://developer.orkescloud.com --profile developer
 ```
 
 In Claude Code they can type `! <command>` so it runs in the session. Ask them
@@ -170,8 +175,8 @@ When the user asks for local, or step 2 found one running. A local OSS server
 needs no access key and any `conductor` works:
 
 ```bash
-"$CONDUCTOR_BIN" server start                     # --port 3000 for another port; `server status` to check
-"$CONDUCTOR_BIN" workflow list --json             # the CLI finds the local server on its own
+conductor server start                     # --port 3000 for another port; `server status` to check
+conductor workflow list --json             # the CLI finds the local server on its own
 ```
 
 To keep a named profile, the **user** runs `conductor config save --profile localhost`
