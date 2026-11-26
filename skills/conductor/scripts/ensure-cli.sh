@@ -1,14 +1,16 @@
 #!/bin/sh
-# Find a conductor CLI that has `create-app` and `integration`, or install the pinned release.
+# Find a conductor CLI, or install the pinned release.
 #
-#   sh ensure-cli.sh            # check only; exit 3 when missing
-#   sh ensure-cli.sh --install  # download, verify sha256, install (no sudo, no Node)
+#   sh ensure-cli.sh                       # any conductor on PATH or in the install dir
+#   sh ensure-cli.sh --need create-app     # one that has these commands (comma-separated:
+#                                          #   create-app,integration); exit 3 when missing/too old
+#   sh ensure-cli.sh --need create-app --install   # download, verify sha256, install (no sudo, no Node)
 #
 # Success prints one line the agent uses for every later command:
 #   CONDUCTOR_BIN=/absolute/path/to/conductor
 #
 # Install dir: $CONDUCTOR_CLI_DIR, else ~/.local/bin. Nothing else is touched:
-# no shell startup files, no global npm, no sudo.
+# no shell startup files, no global npm, no sudo. Windows: use ensure-cli.ps1.
 set -eu
 
 # Pinned release. Bump all three together. sha256 values are GitHub's per-asset
@@ -27,37 +29,73 @@ sha_for() {
 
 DIR="${CONDUCTOR_CLI_DIR:-$HOME/.local/bin}"
 INSTALL=0
-for arg in "$@"; do
-  case "$arg" in
+NEED=""
+while [ $# -gt 0 ]; do
+  case "$1" in
     --install) INSTALL=1 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
-    *) echo "unknown argument: $arg" >&2; exit 2 ;;
+    --need) [ $# -ge 2 ] || { echo "--need takes a value (create-app, integration)" >&2; exit 2; }
+            NEED="$NEED $(echo "$2" | tr ',' ' ')"; shift ;;
+    --need=*) NEED="$NEED $(echo "${1#--need=}" | tr ',' ' ')" ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    *) echo "unknown argument: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+for n in $NEED; do
+  case "$n" in
+    create-app|integration) ;;
+    *) echo "unknown --need value: $n (create-app, integration)" >&2; exit 2 ;;
   esac
 done
 
-# A usable CLI knows `create-app` (connect without a pasted secret) and `integration`
-# (add an LLM provider with a hidden key prompt). Older ones are "too old".
-has_login() { [ -x "$1" ] && "$1" create-app --help >/dev/null 2>&1 && "$1" integration add --help >/dev/null 2>&1; }
+# A usable CLI is executable. With --need it must also know each named command:
+# `create-app` (connect to Developer Edition without a pasted secret) and
+# `integration` (the user adds an LLM provider with a hidden key prompt).
+usable() {
+  [ -x "$1" ] || return 1
+  for n in $NEED; do
+    case "$n" in
+      create-app)  "$1" create-app --help >/dev/null 2>&1 || return 1 ;;
+      integration) "$1" integration add --help >/dev/null 2>&1 || return 1 ;;
+    esac
+  done
+  return 0
+}
 
 found() { echo "CONDUCTOR_BIN=$1"; exit 0; }
 
-if c=$(command -v conductor 2>/dev/null) && has_login "$c"; then found "$c"; fi
-if has_login "$DIR/conductor"; then found "$DIR/conductor"; fi
+if c=$(command -v conductor 2>/dev/null) && usable "$c"; then found "$c"; fi
+if usable "$DIR/conductor"; then found "$DIR/conductor"; fi
+
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) windows=1 ;;
+  *) windows=0 ;;
+esac
+ps1="$(dirname "$0")/ensure-cli.ps1"
+need_csv=$(echo $NEED | tr ' ' ',')
 
 if [ "$INSTALL" -ne 1 ]; then
   if c=$(command -v conductor 2>/dev/null) || { [ -x "$DIR/conductor" ] && c="$DIR/conductor"; }; then
-    echo "MISSING: $c lacks 'create-app' or 'integration' (too old)." >&2
+    echo "MISSING: $c lacks one of: $need_csv (too old)." >&2
   else
     echo "MISSING: no conductor CLI found." >&2
   fi
-  echo "Ask the user, then run: sh \"$0\" --install  (installs $CLI_VERSION to $DIR)" >&2
+  if [ "$windows" -eq 1 ]; then
+    echo "Ask the user, then run: powershell -NoProfile -ExecutionPolicy Bypass -File \"$ps1\"${need_csv:+ -Need $need_csv} -Install" >&2
+  else
+    echo "Ask the user, then run: sh \"$0\"${need_csv:+ --need $need_csv} --install  (installs $CLI_VERSION to $DIR)" >&2
+  fi
   exit 3
 fi
 
+if [ "$windows" -eq 1 ]; then
+  echo "Windows (Git Bash/MSYS): install with powershell -NoProfile -ExecutionPolicy Bypass -File \"$ps1\"${need_csv:+ -Need $need_csv} -Install" >&2
+  exit 1
+fi
 case "$(uname -s)" in
   Darwin) os=darwin ;;
   Linux) os=linux ;;
-  *) echo "unsupported OS $(uname -s); on Windows use ensure-cli.ps1" >&2; exit 1 ;;
+  *) echo "unsupported OS $(uname -s)" >&2; exit 1 ;;
 esac
 case "$(uname -m)" in
   x86_64|amd64) arch=amd64 ;;
@@ -72,7 +110,14 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 url="https://github.com/$CLI_REPO/releases/download/$CLI_VERSION/$asset"
 echo "Downloading $url" >&2
-curl -fsSL "$url" -o "$tmp/conductor"
+if command -v curl >/dev/null 2>&1; then
+  curl -fsSL "$url" -o "$tmp/conductor" || { echo "download failed: $url" >&2; exit 1; }
+elif command -v wget >/dev/null 2>&1; then
+  wget -q -O "$tmp/conductor" "$url" || { echo "download failed: $url" >&2; exit 1; }
+else
+  echo "neither curl nor wget is installed; cannot download $url" >&2
+  exit 1
+fi
 
 if command -v shasum >/dev/null 2>&1; then
   got=$(shasum -a 256 "$tmp/conductor" | awk '{print $1}')
@@ -87,7 +132,7 @@ fi
 mkdir -p "$DIR"
 chmod 755 "$tmp/conductor"
 mv "$tmp/conductor" "$DIR/conductor"
-has_login "$DIR/conductor" || { echo "installed $DIR/conductor but it has no 'create-app'" >&2; exit 1; }
+usable "$DIR/conductor" || { echo "installed $DIR/conductor but it lacks: $need_csv" >&2; exit 1; }
 
 case ":$PATH:" in
   *":$DIR:"*) ;;
