@@ -1,6 +1,7 @@
 {
   "name": "Review and Optimize a Workflow",
   "skills": ["conductor"],
+  "topics": ["optimization", "workflows", "llm"],
   "query": "Review my order_processing workflow and tell me what to fix",
   "expected_behavior": [
     "Step 1: Ask the user for the workflow source — a JSON file path, or a registered workflow name, or fetch the latest registered version",

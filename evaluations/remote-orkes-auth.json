@@ -1,6 +1,7 @@
 {
   "name": "Connect to Explicit Orkes Server with Existing Secure Credentials",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "Use my Orkes server at https://pg-qa.orkesconductor.com/. It requires auth; CONDUCTOR_AUTH_KEY and CONDUCTOR_AUTH_SECRET are already securely set in the environment. Show me the workflows and remember this as pg-qa.",
   "expected_behavior": [
     "Step 1: Because the user supplied a remote URL, do not ask local-vs-remote again.",

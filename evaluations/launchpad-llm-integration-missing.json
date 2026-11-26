@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "/conductor connect to https://acme.orkesconductor.com and build a workflow that summarizes a support ticket with Claude. (Context: `conductor create-app` already saved profile `acme` for the default_app application, which has METADATA_MANAGER; ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `integration-list --category AI_MODEL` returns []. The user is on their own laptop with a terminal.)",
   "expected_behavior": [
     "Step 1: Use profile `acme`; recognize Orkes, where LLM providers are integrations (Rule 16)",

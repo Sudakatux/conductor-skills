@@ -1,6 +1,7 @@
 {
   "name": "First-Time Setup Walkthrough",
   "skills": ["conductor"],
+  "topics": ["setup", "operations", "orkes"],
   "query": "Help me set up Conductor for the first time. I want to run it locally.",
   "expected_behavior": [
     "Step 1: Check whether the `conductor` CLI is already installed via `conductor --version`",

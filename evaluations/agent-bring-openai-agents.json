@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows"],
   "query": "We already have an OpenAI Agents SDK app in Python: an `Agent` with `instructions`, three `@function_tool` functions, and we run it with `Runner.run_sync(agent, prompt)`. I want it running on Conductor with the fewest possible changes. What exactly do I change?",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (decision table → path 3 'bring your framework'; framework execution model — OpenAI Agents is compiled into a Conductor graph) and references/agent-sdks.md (OpenAI Agents SDK row for Python: drop-in `Runner` or pass the `agents.Agent` to `AgentRuntime`).",

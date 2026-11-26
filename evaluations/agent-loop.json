@@ -1,6 +1,7 @@
 {
   "name": "Build an Autonomous Agent Loop with Iteration Cap",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "Build me an autonomous agent loop as pure workflow JSON — hand-wire it yourself with DO_WHILE / LLM_CHAT_COMPLETE / SWITCH, no SDK and no deployed Conductor Agent. It should use an HTTP tool, try up to 10 think/act iterations, accumulate chat history across iterations, and stop when the model emits an answer. I know the SDK Agent route exists; I want the raw JSON so I can see and control every step.",
   "expected_behavior": [
     "Step 1: Consult examples/ai-agent-loop.md, references/workflow-definition.md (DO_WHILE + LLM_CHAT_COMPLETE), references/graaljs-gotchas.md, and references/template-resolution.md. Recognize from the decision table in references/agents.md that the user has explicitly chosen path 5 (hand-wired loop / manual control); briefly acknowledge that a deployed Conductor Agent (SDK `Agent` → `deploy()` → `AGENT {agentType:\"conductor\"}`) compiles to this same loop and offer it as an alternative, then deliver the requested hand-wired JSON as the primary deliverable.",

@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "I'm on our Orkes Conductor cluster (CONDUCTOR_SERVER_URL=https://acme.orkesconductor.io/api, CONDUCTOR_SERVER_TYPE=Enterprise, and my application key/secret are already in the environment). Build me a workflow that summarizes a support ticket with OpenAI gpt-4o-mini. My OpenAI key is exported in my shell as OPENAI_API_KEY. I don't think OpenAI is set up on the cluster yet.",
   "expected_behavior": [
     "Step 1: Recognize the target is Orkes, where LLM providers are cluster integrations (SKILL.md Rule 16, references/orkes-integrations.md) — not server env vars",

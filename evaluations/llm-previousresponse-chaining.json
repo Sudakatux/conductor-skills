@@ -1,6 +1,7 @@
 {
   "name": "OpenAI Multi-Turn Chaining via previousResponseId",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm"],
   "query": "Build me a 3-turn OpenAI conversation workflow where each turn is a separate LLM_CHAT_COMPLETE task. I don't want to resend the message history on every turn — make it efficient. Walk me through what's happening and any provider lock-in I should be aware of.",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (LLM_CHAT_COMPLETE), examples/llm-chaining.md, and examples/llm-chat.md",

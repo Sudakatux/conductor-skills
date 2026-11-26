@@ -1,6 +1,7 @@
 {
   "name": "Write a Worker for a Workflow Task",
   "skills": ["conductor"],
+  "topics": ["workers", "workflows", "operations"],
   "query": "I have a workflow with a SIMPLE task called 'send_email'. Write me a Python worker for it.",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available",

@@ -17,7 +17,10 @@ Checks:
      examples/workflows/*.json follow the shipped AGENT contract.
   8. Eval schema for evaluations/*.json (warns when a cited optimization rule
      id has no heading in references/optimization.md).
-  9. Eval context-size budget — the bytes run_evals.py puts in the system prompt.
+  9. Eval context-size budget — the bytes run_evals.py puts in the system prompt:
+     the full load (soft budget) and the largest per-eval context (hard budget),
+     plus the per-eval "topics" contract: known topics, existing files, and every
+     references/*.md and examples/*.md reachable from some topic.
   10. Amp's public installer contract: help, detection, shared paths, and
       shared install/uninstall handling on Unix and PowerShell.
 
@@ -41,8 +44,10 @@ INSTALL_PS1 = ROOT / "install.ps1"
 EVAL_DIR = ROOT / "evaluations"
 OPTIMIZATION_MD = SKILL_ROOT / "references" / "optimization.md"
 
-# Eval context budget (chars). run_evals.py sends SKILL.md + references/*.md +
-# examples/*.md as one system prompt; keep it well inside every provider's window.
+# Eval context budget (chars). run_evals.py sends SKILL.md plus the references and
+# examples for an eval's "topics" (everything when it has none) as one system
+# prompt. The full load is warned about; the largest context an eval actually
+# gets must stay inside every provider's window.
 CONTEXT_WARN_CHARS = 300_000
 CONTEXT_FAIL_CHARS = 340_000
 
@@ -318,6 +323,11 @@ def check_remote_setup_contract() -> None:
             "Never fall back to `developer` silently",
             "create-app failed (",
             "If create-app fails",
+            "## Connect to a server",
+            "### 3. Find the flavor, before connecting",
+            "--need create-app",
+            "no_launchpad",
+            "Manual key path",
         ):
             if required not in contents:
                 fail(
@@ -510,25 +520,56 @@ def check_ci_shards() -> None:
             fail(f"evaluations/{name} matches {len(hits)} CI shards: {hits}")
 
 
-def eval_context_size() -> int:
-    """Size of the skill context run_evals.py sends as the agent's system prompt.
+def load_run_evals():
+    """Import scripts/run_evals.py (stdlib only) so topics and sizes never drift."""
+    sys.dont_write_bytecode = True  # do not litter scripts/__pycache__ in the repo
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import run_evals  # noqa: WPS433 — local module, stdlib only
 
-    Prefers the real loader so the two never drift; falls back to the same
-    globs (SKILL.md + references/*.md + examples/*.md) if the import fails.
-    """
-    try:
-        sys.dont_write_bytecode = True  # do not litter scripts/__pycache__ in the repo
-        sys.path.insert(0, str(ROOT / "scripts"))
-        import run_evals  # noqa: WPS433 — local module, stdlib only
+    return run_evals
 
-        return len(run_evals.load_skill_context())
-    except Exception:
-        files = [
-            SKILL_ROOT / "SKILL.md",
-            *sorted((SKILL_ROOT / "references").glob("*.md")),
-            *sorted((SKILL_ROOT / "examples").glob("*.md")),
-        ]
-        return sum(len(f.read_text()) for f in files if f.exists())
+
+def check_eval_topics(run_evals) -> None:
+    """Every eval's optional "topics" is a non-empty list of known topics; every
+    topic file exists; every reference and example is reachable from a topic."""
+    topics = run_evals.TOPICS
+    for name, files in topics.items():
+        for rel in files:
+            if not (SKILL_ROOT / rel).exists():
+                fail(f"run_evals.py TOPICS[{name!r}]: {rel} does not exist")
+    covered = {f for files in topics.values() for f in files}
+    for rel in run_evals.skill_files():
+        if rel not in covered:
+            fail(f"skills/conductor/{rel} is in no run_evals.py topic (evals with topics never see it)")
+    for eval_file in sorted(EVAL_DIR.glob("*.json")):
+        try:
+            data = json.loads(eval_file.read_text())
+        except json.JSONDecodeError:
+            continue  # reported by check_eval_schema
+        if not isinstance(data, dict) or "topics" not in data:
+            continue
+        value = data["topics"]
+        rel = eval_file.relative_to(ROOT)
+        if not isinstance(value, list) or not value or not all(isinstance(t, str) for t in value):
+            fail(f"eval {rel}: 'topics' must be a non-empty list of strings (omit it to load everything)")
+            continue
+        for t in value:
+            if t not in topics:
+                fail(f"eval {rel}: unknown topic {t!r}; known: {sorted(topics)}")
+
+
+def eval_context_sizes(run_evals) -> tuple[int, int, str]:
+    """(full-load size, largest per-eval size, that eval's file name)."""
+    full = len(run_evals.load_skill_context())
+    biggest, name = 0, ""
+    for eval_file in sorted(EVAL_DIR.glob("*.json")):
+        try:
+            size = len(run_evals.load_skill_context(run_evals.eval_topics(eval_file)))
+        except ValueError:
+            continue  # unknown topic, reported by check_eval_topics
+        if size > biggest:
+            biggest, name = size, eval_file.name
+    return full, biggest, name
 
 
 def main() -> int:
@@ -702,13 +743,21 @@ def main() -> int:
     # CI shards — every eval file lands in exactly one shard of the evals.yml matrix.
     check_ci_shards()
 
-    # Eval context budget.
-    size = eval_context_size()
-    print(f"Eval context size: {size} chars (~{size // 4} tokens)")
-    if size > CONTEXT_FAIL_CHARS:
-        fail(f"eval context size {size} chars exceeds hard budget {CONTEXT_FAIL_CHARS}")
-    elif size > CONTEXT_WARN_CHARS:
-        warn(f"eval context size {size} chars exceeds soft budget {CONTEXT_WARN_CHARS}")
+    # Eval topics and context budget.
+    try:
+        run_evals = load_run_evals()
+    except Exception as e:  # noqa: BLE001 — report, don't crash the validator
+        fail(f"scripts/run_evals.py failed to import: {e}")
+    else:
+        check_eval_topics(run_evals)
+        full, biggest, name = eval_context_sizes(run_evals)
+        print(f"Eval context size: full load {full} chars (~{full // 4} tokens); "
+              f"largest per-eval {biggest} chars (~{biggest // 4} tokens, {name})")
+        if biggest > CONTEXT_FAIL_CHARS:
+            fail(f"eval {name} context {biggest} chars exceeds hard budget {CONTEXT_FAIL_CHARS}; narrow its topics")
+        if full > CONTEXT_WARN_CHARS:
+            warn(f"full-load eval context {full} chars exceeds soft budget {CONTEXT_WARN_CHARS} "
+                 f"(only evals without \"topics\" load all of it)")
 
     if warnings:
         print("Plugin validation warnings:", file=sys.stderr)

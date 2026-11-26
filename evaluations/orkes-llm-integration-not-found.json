@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "My summarize_ticket workflow works on my local Conductor but on our Orkes cluster the LLM_CHAT_COMPLETE task fails saying the integration 'anthropic' was not found. The task has llmProvider: \"anthropic\" and model: \"claude-sonnet-4-6\". Our admins say Anthropic is configured. What's wrong and how do I fix it?",
   "expected_behavior": [
     "Step 1: Explain that on Orkes `llmProvider` is the name of an integration configured on the cluster, not the provider type — locally (OSS) `anthropic` is the provider name, so the same JSON works there",

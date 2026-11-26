@@ -1,6 +1,7 @@
 {
   "name": "Hand-Wired DO_WHILE Agent Requested — Offer the SDK Agent as Default, Keep Hand-Wiring as Escape Hatch",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Build me a workflow: a DO_WHILE with an LLM_CHAT_COMPLETE, a SWITCH on the action, three HTTP tools (lookup_order, check_inventory, issue_refund), a SET_VARIABLE for chat history, max 10 turns. issue_refund must get human approval before it runs, and I want to watch the agent's reasoning live while it runs.",
   "expected_behavior": [
     "Step 1: Consult SKILL.md Rule 8, references/agents.md (decision table: 'build an agent' + approval + live reasoning → path 2 Conductor Agent via SDK; path 5 hand-wired loop is the escape hatch), references/optimization.md rule F4, examples/ai-agent-loop.md (hand-wired loop, under the hood / manual control), and references/agent-sdks.md.",

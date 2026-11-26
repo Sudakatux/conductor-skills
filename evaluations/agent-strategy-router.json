@@ -1,6 +1,7 @@
 {
   "name": "Dev-Team Agent With a Dedicated Selector Routing to Exactly One Specialist (Strategy.ROUTER)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Our dev-team agent has three specialists — `planner`, `coder` and `reviewer` — and every request should go to exactly one of them, no back-and-forth between them. I don't want the specialists deciding; I want a small, cheap classifier making the call. Python. How would you set this up, and what has to be running in prod?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `router` row: a dedicated classifier — an `Agent` or a Python callable — picks exactly one child; no shared conversation; a callable `router` is a worker that `serve()` registers), references/agents.md §3/§4, references/optimization.md F1/F3, and WebFetch the Python SDK `docs/agents/` before pinning the install (Rule 7.3).",

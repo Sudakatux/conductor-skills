@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows"],
   "query": "Three cancellation scenarios for my deployed `deep_research` agent: (1) inside a workflow, give the agent 20 minutes and cancel it if it hasn't finished; (2) a run is paused waiting on a human and we've decided to abandon it — cancel it from another workflow; (3) an operator needs to cancel a run right now from the terminal. What do I use for each?",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### AGENT`, `### CANCEL_AGENT`), references/agents.md (operations section: cancel = `DELETE /api/agent/{id}/cancel?reason=` or `conductor workflow terminate <executionId>`; status mapping canceled → CANCELED), references/cli-index.md (agent verbs — no `agent cancel`), and examples/agent-deploy-and-invoke.md (`agent-cancel.json`).",

@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "For a quick experiment I want a throwaway summarizer step inside my `nightly_digest` workflow, but I don't want to deploy an agent by name first. Can the AGENT task carry the agent definition inline? Same question for a LangGraph config I already have as JSON, and for a skill package we registered. And when should I deploy by name instead?",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md `### AGENT` (the `agentConfig` / `framework` + `rawConfig` / `skillRef{name,version}` row and inline example) and references/agents.md (§3 decision table, §8 operate) before writing JSON.",

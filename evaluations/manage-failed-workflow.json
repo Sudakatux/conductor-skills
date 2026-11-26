@@ -1,6 +1,7 @@
 {
   "name": "Debug and Retry a Failed Workflow",
   "skills": ["conductor"],
+  "topics": ["workflows", "operations"],
   "query": "Find my failed workflows from today and retry them",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available",

@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "Our Conductor server is at https://conductor.acme.internal/api. I want our workflows to use OpenAI gpt-4o-mini — set that up. My OpenAI key is exported as OPENAI_API_KEY.",
   "expected_behavior": [
     "Step 1: The hostname doesn't say whether this is OSS or Orkes, so determine it from the server (SKILL.md Rule 17): `python3 \"$CONDUCTOR_API\" server-info` (no credentials sent) or an unauthenticated `conductor workflow list`",

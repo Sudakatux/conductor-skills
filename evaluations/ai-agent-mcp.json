@@ -1,6 +1,7 @@
 {
   "name": "Build an AI Agent Using MCP Tools",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm"],
   "query": "Build me an AI agent workflow that lists MCP tools, picks one, calls it, and summarizes the result",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md and examples/ai-agent-mcp.md for the canonical first-AI-agent pattern",

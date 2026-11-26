@@ -1,6 +1,7 @@
 {
   "name": "Data-Analyst Agent With Code Execution and an Ops Agent With Allow-Listed CLI Commands",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Two agents in Python. A `data_analyst` that writes and runs Python snippets against CSVs we hand it — ideally sandboxed. And an `ops_agent` that can run `gh` and `aws` CLI commands (it needs a GitHub token) to triage incidents — nothing else, and no arbitrary shell. What guardrails does the SDK give me, and where do the credentials go?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §7 (`local_code_execution=True, allowed_languages=[\"python\"], allowed_commands=[\"python3\"]`; `code_execution=CodeExecutionConfig(executor=DockerCodeExecutor(image=\"python:3.12-slim\"))` — also Jupyter / Serverless executors; `cli_commands=True, cli_allowed_commands=[\"gh\", \"aws\"], credentials=[\"GH_TOKEN\"]` or `cli_config=CliConfig(allowed_commands=[...], timeout=60, working_dir=\"/work\", allow_shell=False)`), references/agents.md §4 (`cli_commands` / `cli_allowed_commands` / `cli_config`; `local_code_execution` / `allowed_languages` / `code_execution`; `credentials[]`), §5 (`cli` → server-side sandboxed `run_command` tool with an allow-list; `LocalCodeExecutor` / `DockerCodeExecutor` / `JupyterCodeExecutor` / `ServerlessCodeExecutor`), §8 secrets, references/optimization.md F2 (shell/code tools need allow-lists — `cliConfig` / `codeExecution` with empty allow-lists is CRITICAL), F5, F1.",

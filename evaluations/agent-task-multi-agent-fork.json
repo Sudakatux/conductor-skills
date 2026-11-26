@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "I have three deployed agents: `researcher`, `critic`, and `writer`. Build a workflow that runs researcher and critic in parallel on the same brief, then has writer synthesize both of their outputs into a final article.",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### AGENT` conductor mode; FORK_JOIN/JOIN), references/agents.md (multi-agent options: workflow-side FORK_JOIN vs SDK `agents=[...]` + `strategy` / `scatter_gather`), and examples/agent-deploy-and-invoke.md (`agent-fork-specialists.json`).",

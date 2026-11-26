@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "For each new deal we need three independent analyses — market, risk and compliance — followed by one combined memo. They shouldn't wait on each other. Build this as a single Python agent I can invoke from our `deal_review` workflow, and tell me what it costs in LLM calls per deal.",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `parallel` row: all children run at once as a `FORK_JOIN`, the parent synthesizes; the parent's model is inherited from the first child if omitted), references/agents.md §4, references/workflow-definition.md (`### AGENT`), references/optimization.md F1 and F10 (fan-out multiplies LLM spend and worker load), and examples/agent-deploy-and-invoke.md (`agent-fork-specialists.json` for the workflow-side alternative).",

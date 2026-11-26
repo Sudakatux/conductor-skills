@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "On our Orkes cluster I created an OpenAI integration called openai-prod with gpt-4o and gpt-4o-mini, and my workflows use it fine. The data-science group's workflows, which run under their own application key, fail on the LLM task with an access denied error. How do I give them access without creating another integration?",
   "expected_behavior": [
     "Step 1: Explain that the creator of an integration gets access automatically, but other applications / groups need an explicit grant on the integration",

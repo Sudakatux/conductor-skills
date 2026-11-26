@@ -1,6 +1,7 @@
 {
   "name": "Connect to Remote Server with Auth",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "Connect me to my Conductor server at https://conductor.mycompany.com/api",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is installed, install if missing",

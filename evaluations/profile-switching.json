@@ -1,6 +1,7 @@
 {
   "name": "Multi-Environment Profile Switching",
   "skills": ["conductor"],
+  "topics": ["setup"],
   "query": "How many workflows do I have in dev vs prod?",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available",

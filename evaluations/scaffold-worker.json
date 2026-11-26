@@ -1,6 +1,7 @@
 {
   "name": "Scaffold a Worker in the User's Language (Built-in First, Fetch SDK Before Writing)",
   "skills": ["conductor"],
+  "topics": ["workers", "workflows", "operations"],
   "query": "I have a Conductor task type `charge_card` that needs to call our internal payments API at `payments.internal/charge` — it's a proprietary service, not Stripe or anything off-the-shelf. Write me a worker for this in Python.",
   "expected_behavior": [
     "Step 1: Confirm there is no built-in match (no LLM_*, HTTP-to-internal-API would lose retries/observability but more importantly the user explicitly said it's a *worker*-shaped task — proprietary business logic, not a generic HTTP call). State briefly why a SIMPLE worker is the right answer here vs. e.g. an HTTP task (proprietary auth, retry semantics, idempotency keys, etc.).",

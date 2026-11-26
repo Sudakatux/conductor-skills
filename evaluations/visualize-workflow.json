@@ -1,6 +1,7 @@
 {
   "name": "Visualize a Workflow Definition",
   "skills": ["conductor"],
+  "topics": ["visualization", "workflows"],
   "query": "Show me a visual diagram of an order-processing workflow that has these constructs: a SWITCH branching on order type, a FORK_JOIN running inventory and pricing lookups in parallel, and a WAIT task for human approval. Don't worry about actually fetching it from the server — assume you know the shape and render it as Mermaid with a brief text summary.",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available",

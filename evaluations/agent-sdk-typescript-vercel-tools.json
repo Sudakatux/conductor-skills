@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows"],
   "query": "We have a TypeScript service with a couple of Vercel AI SDK `tool()` definitions using zod schemas — `getForecast` and `getAlerts`. Build a Conductor agent called `weather_bot` that reuses those tool definitions as they are. Show me how to run it once from the command line and how we'd deploy it.",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (decision table → path 3 'bring your framework', TypeScript column), references/agent-sdks.md (TypeScript install/import matrix; Vercel AI row: AI-SDK `tool()` objects go straight into `Agent.tools`), and examples/agent-deploy-and-invoke.md.",

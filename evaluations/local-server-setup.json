@@ -1,6 +1,7 @@
 {
   "name": "Start Local Server and Create First Workflow",
   "skills": ["conductor"],
+  "topics": ["setup", "workflows", "operations"],
   "query": "Start a local Conductor server and create a simple hello world workflow",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is installed, install if missing",

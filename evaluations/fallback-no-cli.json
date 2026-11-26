@@ -1,6 +1,7 @@
 {
   "name": "Fallback Script When CLI Unavailable",
   "skills": ["conductor"],
+  "topics": ["setup"],
   "query": "List my workflows. I can't install npm or node on this machine.",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available — it's not",

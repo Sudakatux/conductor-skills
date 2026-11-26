@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "Set up AWS Bedrock (Anthropic models) as an AI integration on our Orkes cluster in us-east-1 so our workflows can use Claude through Bedrock. We use an IAM role: the role ARN and external ID are in BEDROCK_ROLE_ARN and BEDROCK_EXTERNAL_ID. Add whatever Claude models Bedrock currently offers.",
   "expected_behavior": [
     "Step 1: Check existing AI integrations first (`integration-list --category AI_MODEL`)",

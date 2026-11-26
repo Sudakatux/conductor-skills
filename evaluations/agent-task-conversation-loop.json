@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "I need a negotiation loop in one workflow: my deployed `buyer_agent` makes an offer, our pricing API (HTTP) returns a counter-offer, and the agent gets that counter-offer plus its own previous message for the next round. At most 5 rounds, and stop early as soon as the agent's reply contains ACCEPT. How do I build this?",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### DO_WHILE`, `### AGENT`, `### SET_VARIABLE`, `### INLINE`), references/graaljs-gotchas.md for the loop condition, and references/agents.md (§12 gotchas: `sessionId` groups but does not replay history; F1 bounds).",

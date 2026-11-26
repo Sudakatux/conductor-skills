@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "Build a workflow on https://acme.orkesconductor.com that classifies support tickets with GPT. (Context: you are running as a cloud/web agent; the user has no terminal on this machine, only a browser. Profile `acme` exists for the default_app application; `integration-list --category AI_MODEL` returns [].)",
   "expected_behavior": [
     "Step 1: Check integration-list → nothing usable; provider OpenAI, current model id from OpenAI's models page",

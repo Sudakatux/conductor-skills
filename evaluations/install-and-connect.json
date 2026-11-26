@@ -1,6 +1,7 @@
 {
   "name": "First-Time Setup — Connect with create-app",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "I want to start using Conductor but I don't have anything set up yet",
   "expected_behavior": [
     "Step 1: Resolve the CLI per Rule 3, asking before installing anything, and use the resulting `conductor` path for every later command",

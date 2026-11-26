@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "On our Orkes cluster (auth required; integration openai-prod already has gpt-4o-mini registered) build a workflow that takes a support ticket as input and returns a 3-bullet summary in a friendly tone. Use system instructions telling the model how to summarize.",
   "expected_behavior": [
     "Step 1: Recognize Enterprise (auth required) \u2014 on Enterprise `instructions` is read as a saved prompt-template name (SKILL.md Rule 18)",

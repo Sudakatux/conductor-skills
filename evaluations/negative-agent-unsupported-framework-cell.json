@@ -1,6 +1,7 @@
 {
   "name": "Unsupported Language × Framework Cells: Vercel AI in Python, LangChain in .NET",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "Two asks: our Python team wants to use Vercel AI SDK tools with a Conductor agent, and our .NET team wants to use LangChain with Conductor. Give me the install commands for both.",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md (language × framework matrix and the verbatim unsupported-cell messages) and references/agents.md (decision table).",

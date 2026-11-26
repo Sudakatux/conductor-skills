@@ -1,6 +1,7 @@
 {
   "name": "Default First-Time Setup — Developer Edition via create-app",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "Set up Conductor for me.",
   "expected_behavior": [
     "Step 1: Resolve the CLI per Rule 3, asking before installing anything, and use the resulting `conductor` path from then on",

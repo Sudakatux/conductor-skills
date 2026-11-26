@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["orkes", "setup", "workflows", "llm"],
   "query": "My workflow fails on Orkes with: \"Prompt You are a helpful assistant that classifies tickets into billing, technical or sales is not associated with integration openai-prod and model gpt-4o-mini\". The LLM_CHAT_COMPLETE task has that sentence in instructions. Works fine on my local OSS Conductor. Fix it.",
   "expected_behavior": [
     "Step 1: Explain that on Enterprise `instructions` is read as a saved prompt-template name; literal text there fails this check unless `allowRawPrompts: true` (OSS has no prompt registry, which is why it works locally)",

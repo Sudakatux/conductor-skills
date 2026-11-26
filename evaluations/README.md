@@ -320,7 +320,11 @@ The runner retries transient API failures (HTTP 429/5xx, timeouts, connection re
 
 Exit code is `0` if all evals pass, `1` if any fail — suitable for CI/CD gates.
 
-Eval system-prompt size baseline: see `python3 scripts/run_evals.py --print-context-size` (the runner concatenates `SKILL.md` + all `references/*.md` + all `examples/*.md` into the agent's system prompt; keep new reference files tight).
+Eval system-prompt size: see `python3 scripts/run_evals.py --print-context-size`. The runner always sends `SKILL.md`, plus the references and examples for the eval's `"topics"` (the `TOPICS` table in `scripts/run_evals.py`), or every `references/*.md` and `examples/*.md` when the eval has no `topics`. Keep new reference files tight.
+
+### Topics
+
+Every eval lists the topics it needs, e.g. `"topics": ["workflows", "operations"]`. Topics: `setup`, `orkes`, `workflows`, `operations`, `llm`, `agents`, `workers`, `optimization`, `schedules`, `visualization`. `validate_plugin.py` checks that each topic is known, each mapped file exists, and every reference and example belongs to some topic; it fails when any eval's context passes 340,000 chars and warns when the full load passes 300,000. If an eval fails because the agent didn't know something it would have read in real life, widen its topics before blaming the skill. An eval that cites an optimization rule id (`F1`, `D1`, …) needs `optimization`.
 
 ### HTML report
 

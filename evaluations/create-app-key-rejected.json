@@ -1,6 +1,7 @@
 {
   "name": "create-app fails with key_rejected — the old profile was kept; retry once, then report",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "reconnect my acme profile, then show my workflows. (Context: CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `--profile acme whoami` returned 401, so the user agreed to replace the profile and you ran `/Users/me/.local/bin/conductor create-app --server https://acme.orkesconductor.com --profile acme --yes`. It exited 1 with stderr: `Error: create-app failed (key_rejected): the server rejected the new key 1a2b at https://acme.orkesconductor.com/api/token: 401 Unauthorized; the existing profile \"acme\" was kept unchanged`.)",
   "expected_behavior": [
     "Step 1: Read the code `key_rejected`: the server rejected the new key, so the CLI did not write the profile",

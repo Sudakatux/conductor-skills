@@ -1,6 +1,7 @@
 {
   "name": "Schedule a Deployed Conductor Agent (weekdays at 6am with a fixed prompt)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "Run my deployed `daily_digest` agent every weekday at 6am with the prompt 'Summarize yesterday's support tickets and post the digest to #support-digest'.",
   "expected_behavior": [
     "Step 1: Consult references/schedules.md (schedule JSON + Quartz cron; 'Scheduling a deployed agent' note), references/agents.md (a deployed agent IS a workflow named after the agent; schedule section), and references/cli-index.md.",
