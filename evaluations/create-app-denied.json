@@ -2,10 +2,10 @@
   "name": "create-app fails with denied — stop, don't claim a connection, don't retry",
   "skills": ["conductor"],
   "topics": ["setup", "orkes"],
-  "query": "connect to https://acme.orkesconductor.com and list my workflows. (Context: ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `conductor config list` shows no profiles. You ran `/Users/me/.local/bin/conductor create-app --server https://acme.orkesconductor.com --profile acme`; it exited 1 and stderr was: `Error: create-app failed (denied): access was denied in the browser`.)",
+  "query": "connect to https://developer.orkescloud.com and list my workflows. (Context: ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `conductor config list` shows no profiles. You ran `/Users/me/.local/bin/conductor create-app --server https://developer.orkescloud.com --profile developer`; it exited 1 and stderr was: `Error: create-app failed (denied): access was denied in the browser`.)",
   "expected_behavior": [
     "Step 1: Read the code `denied` from the first stderr line: the user clicked Deny in the browser",
-    "Step 2: Tell the user you are not connected to acme.orkesconductor.com and no profile was saved",
+    "Step 2: Tell the user you are not connected to developer.orkescloud.com and no profile was saved",
     "Step 3: Don't rerun create-app on your own, don't ask for a key or secret, and don't switch to `config save` or env-var auth; offer to run it again only if they want to",
     "Step 4: Don't list workflows or call the server"
   ],

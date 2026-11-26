@@ -5,7 +5,7 @@
   "query": "List my workflows. I can't install npm or node on this machine.",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available — it's not",
-    "Step 2: Attempt to install via npm — npm is not available",
+    "Step 2: The user stated an install limit, so do not offer to install the CLI (not even the Node-free binary) — SKILL.md Rule 3.4",
     "Step 3: Recognize this is a restricted environment and switch to fallback script",
     "Step 4: Set CONDUCTOR_API path to the bundled scripts/conductor_api.py",
     "Step 5: Verify CONDUCTOR_SERVER_URL is set",
@@ -14,7 +14,7 @@
     "Step 8: Inform user that all subsequent operations will use the fallback script"
   ],
   "success_criteria": [
-    "Agent acknowledges the user-stated constraint (no Node/npm) and does NOT attempt `npm install -g` after the user has explicitly said it's not possible — per SKILL.md Rule 3 point 4",
+    "Agent acknowledges the user-stated constraint and goes straight to the fallback without offering any install (no `npm install -g`, no `ensure-cli.sh --install`) — per SKILL.md Rule 3.4",
     "Plan uses the bundled scripts/conductor_api.py fallback, not raw curl/wget commands",
     "CONDUCTOR_SERVER_URL is verified before making API calls",
     "Script output is parsed and presented clearly to the user",

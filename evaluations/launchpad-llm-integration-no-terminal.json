@@ -4,11 +4,11 @@
     "conductor"
   ],
   "topics": ["orkes", "setup", "workflows", "llm"],
-  "query": "Build a workflow on https://acme.orkesconductor.com that classifies support tickets with GPT. (Context: you are running as a cloud/web agent; the user has no terminal on this machine, only a browser. Profile `acme` exists for the default_app application; `integration-list --category AI_MODEL` returns [].)",
+  "query": "Build a workflow on https://developer.orkescloud.com that classifies support tickets with GPT. (Context: you are running as a cloud/web agent; the user has no terminal on this machine, only a browser. Profile `developer` exists for the default_app application; `integration-list --category AI_MODEL` returns [].)",
   "expected_behavior": [
     "Step 1: Check integration-list → nothing usable; provider OpenAI, current model id from OpenAI's models page",
     "Step 2: Recognize `conductor integration add` needs a terminal on the machine holding the profile, which the user doesn't have here",
-    "Step 3: Give manual UI steps in words for acme.orkesconductor.com, without generating or guessing a URL: Integrations → New Integration → OpenAI, enter the key and save; Add Model → <id>; share it with default_app (Access Control → Applications → default_app → Integration tab); reply done",
+    "Step 3: Give manual UI steps in words for developer.orkescloud.com, without generating or guessing a URL: Integrations → New Integration → OpenAI, enter the key and save; Add Model → <id>; share it with default_app (Access Control → Applications → default_app → Integration tab); reply done",
     "Step 4: End the turn and wait for the user's done",
     "Step 5: Confirm with `integration-wait --type openai --model <id> --timeout 30`, then continue the task with the returned integration name"
   ],

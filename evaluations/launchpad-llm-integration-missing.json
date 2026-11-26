@@ -4,12 +4,12 @@
     "conductor"
   ],
   "topics": ["orkes", "setup", "workflows", "llm"],
-  "query": "/conductor connect to https://acme.orkesconductor.com and build a workflow that summarizes a support ticket with Claude. (Context: `conductor create-app` already saved profile `acme` for the default_app application, which has METADATA_MANAGER; ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `integration-list --category AI_MODEL` returns []. The user is on their own laptop with a terminal.)",
+  "query": "/conductor connect to https://developer.orkescloud.com and build a workflow that summarizes a support ticket with Claude. (Context: `conductor create-app` already saved profile `developer` for the default_app application, which has METADATA_MANAGER; ensure-cli printed CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `integration-list --category AI_MODEL` returns []. The user is on their own laptop with a terminal.)",
   "expected_behavior": [
-    "Step 1: Use profile `acme`; recognize Orkes, where LLM providers are integrations (Rule 16)",
-    "Step 2: `python3 \"$CONDUCTOR_API\" --profile acme integration-list --category AI_MODEL` → nothing usable",
+    "Step 1: Use profile `developer`; recognize Orkes, where LLM providers are integrations (Rule 16)",
+    "Step 2: `python3 \"$CONDUCTOR_API\" --profile developer integration-list --category AI_MODEL` → nothing usable",
     "Step 3: Provider is Anthropic (from 'Claude'); pick a current model id from Anthropic's models page (WebSearch/WebFetch), e.g. claude-sonnet-4-6 — not from memory",
-    "Step 4: Reply with the exact command in its own code block, fully filled in — `/Users/me/.local/bin/conductor --profile acme integration add --type anthropic --model <id>` — for the user to run in a terminal of their own, explaining it asks for the key with a hidden prompt, checks it, creates the integration and adds the model; ask them to reply done",
+    "Step 4: Reply with the exact command in its own code block, fully filled in — `/Users/me/.local/bin/conductor --profile developer integration add --type anthropic --model <id>` — for the user to run in a terminal of their own, explaining it asks for the key with a hidden prompt, checks it, creates the integration and adds the model; ask them to reply done",
     "Step 5: Do not run that command itself, do not ask for the Anthropic key, and do not tell the user to export it",
     "Step 6: End the turn and wait for the user (no background poll, no building the workflow meanwhile); when they reply done, confirm with `integration-wait --type anthropic --model <id> --timeout 30`; if not ready, say what's missing, repeat the exact command and wait again",
     "Step 7: With the returned `llmProvider` name, save a prompt template (Rule 18), write the LLM_CHAT_COMPLETE workflow to a file, register it and run a verification execution",
@@ -17,7 +17,7 @@
   ],
   "success_criteria": [
     "Checks integration-list (and model-list if something is visible) before acting",
-    "The reply shows the complete copy-pasteable command in a code block — absolute CONDUCTOR_BIN path, `--profile acme`, `integration add --type anthropic --model <exact id>` — with no placeholders; merely telling the user to 'run the integration add command' fails this criterion",
+    "The reply shows the complete copy-pasteable command in a code block — absolute CONDUCTOR_BIN path, `--profile developer`, `integration add --type anthropic --model <exact id>` — with no placeholders; merely telling the user to 'run the integration add command' fails this criterion",
     "Never runs `integration add` itself, never asks for or accepts the Anthropic key in chat, and never suggests exporting it for the agent",
     "Ends the turn after giving the command and waits for the user's 'done' before continuing (no background polling while building the workflow); then confirms with integration-wait",
     "Continues the original task afterwards using the integration NAME returned, not assuming the type 'anthropic'",

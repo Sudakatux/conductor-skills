@@ -4,16 +4,16 @@
   "topics": ["setup", "orkes"],
   "query": "Set up Conductor for me.",
   "expected_behavior": [
-    "Step 1: Resolve the CLI per Rule 3, asking before installing anything, and use the resulting `conductor` path from then on",
-    "Step 2: Run `conductor config list`. No profiles and no server named → default to Developer Edition (`https://developer.orkescloud.com`, profile `developer`) and say: Using Developer Edition; give me a URL to use another Conductor server. If profiles exist, ask which one instead (one question)",
-    "Step 3: Tell the user to sign in and click **Approve** in the browser, then run `conductor create-app --server https://developer.orkescloud.com --profile developer` with a long timeout",
+    "Step 1: Resolve the CLI per Rule 3 (`ensure-cli.sh`, which accepts any `conductor`) and use the printed `CONDUCTOR_BIN` from then on",
+    "Step 2: Run `conductor config list`. No profiles, no server named, no `CONDUCTOR_SERVER_URL` and no local server → default to Developer Edition (`https://developer.orkescloud.com`, profile `developer`) and say: Using Developer Edition; give me a URL to use another Conductor server, or say 'local'. With one working profile, use it; with several, use a working `developer` and say so, otherwise ask which one (one question)",
+    "Step 3: Developer Edition is Orkes (no probe needed). Run `ensure-cli.sh --need create-app` (ask before installing), then `conductor create-app --server https://developer.orkescloud.com --profile developer` with a long timeout; tell the user to sign in and click **Approve** once the CLI prints `Opening <url>` (or beforehand, conditionally: if a browser window opens)",
     "Step 4: Verify with `conductor --profile developer whoami` and `conductor --profile developer workflow list --json`",
     "Step 5: Mention local OSS (`conductor server start` + a no-auth `localhost` profile) only as an option; do not set it up unasked",
     "Step 6: Honor an explicit local-only, URL, or existing named-profile request instead of the default"
   ],
   "success_criteria": [
     "Connection uses `conductor create-app` run by the agent; the user only signs in and approves. UI access-key creation plus `config save` is acceptable only as the timeout fallback",
-    "Developer Edition default is stated explicitly, not applied silently, and only when no profiles exist; with existing profiles the agent asks which one",
+    "Developer Edition default is stated explicitly, not applied silently, and only when nothing else names a server (no profiles); with several profiles the agent uses a working `developer` and says so, otherwise asks which one",
     "No local server or `localhost` profile is set up unasked",
     "Agent never asks for credential values in chat and never reads profile YAML, the clipboard, or secret-bearing terminal input",
     "Agent honors an explicit non-default target instead of forcing the Developer Edition default"

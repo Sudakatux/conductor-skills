@@ -32,6 +32,12 @@ Test the `Error: create-app failed (<code>)` table in setup.md. `denied`: stop, 
 ### create-app-blocked.json
 Tests what happens when a permission check (Claude Code auto mode) blocks the agent's `create-app` call: no retry or workaround, the exact command handed to the user (with the `!` prefix tip), the turn ended, and `whoami` before continuing once the user says done.
 
+### create-app-no-launchpad.json
+The CLI's `create-app failed (no_launchpad)` (the server isn't Orkes Developer Edition): no retry, no "click Approve", the manual key path (UI access key + interactive `config save` in the user's own terminal) or injected `CONDUCTOR_AUTH_*`.
+
+### setup-ci-env-vars.json, setup-legacy-profiles.json, setup-local-server-detected.json, setup-launchpad-prompt-other-profile.json
+The server order in setup.md: `CONDUCTOR_SERVER_URL` + injected credentials in an unattended CI job (no `create-app`, no questions, the old CLI is fine); the old `developer` + `localhost` profiles (use a working `developer` and say so); a running local server with no profiles (OSS, no `create-app`); and a Launch Pad prompt naming Developer Edition, which wins over a saved `acme` profile.
+
 ### local-server-setup.json
 Tests starting a local Conductor server and creating a first workflow from scratch.
 

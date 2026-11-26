@@ -21,6 +21,7 @@
     "Profile creation uses only the current interactive form `conductor config save --profile pg-qa`",
     "Profile discovery uses `conductor config list`; raw profile YAML is never read",
     "The answer distinguishes Conductor access credentials from LLM-provider keys on the server",
-    "The fallback's automatic key/secret-to-token exchange is described accurately"
+    "The fallback's automatic key/secret-to-token exchange is described accurately",
+    "Does not run `conductor create-app` or ask for a browser approval: the credentials are already in the environment"
   ]
 }

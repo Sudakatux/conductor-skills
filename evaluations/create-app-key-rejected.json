@@ -2,16 +2,16 @@
   "name": "create-app fails with key_rejected — the old profile was kept; retry once, then report",
   "skills": ["conductor"],
   "topics": ["setup", "orkes"],
-  "query": "reconnect my acme profile, then show my workflows. (Context: CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `--profile acme whoami` returned 401, so the user agreed to replace the profile and you ran `/Users/me/.local/bin/conductor create-app --server https://acme.orkesconductor.com --profile acme --yes`. It exited 1 with stderr: `Error: create-app failed (key_rejected): the server rejected the new key 1a2b at https://acme.orkesconductor.com/api/token: 401 Unauthorized; the existing profile \"acme\" was kept unchanged`.)",
+  "query": "reconnect my developer profile, then show my workflows. (Context: CONDUCTOR_BIN=/Users/me/.local/bin/conductor; `--profile developer whoami` returned 401, so the user agreed to replace the profile and you ran `/Users/me/.local/bin/conductor create-app --server https://developer.orkescloud.com --profile developer --yes`. It exited 1 with stderr: `Error: create-app failed (key_rejected): the server rejected the new key 1a2b at https://developer.orkescloud.com/api/token: 401 Unauthorized; the existing profile \"developer\" was kept unchanged`.)",
   "expected_behavior": [
     "Step 1: Read the code `key_rejected`: the server rejected the new key, so the CLI did not write the profile",
-    "Step 2: Tell the user it isn't connected yet and that the existing acme profile was kept unchanged (it still has the old, failing key)",
+    "Step 2: Tell the user it isn't connected yet and that the existing developer profile was kept unchanged (it still has the old, failing key)",
     "Step 3: Retry the same create-app command once (with a long timeout, after reminding them to Approve)",
-    "Step 4: Only on exit 0 and a `✓ Saved profile` line, run `--profile acme whoami` and then list workflows; if it fails again, report the detail and stop (check the server URL) instead of looping"
+    "Step 4: Only on exit 0 and a `✓ Saved profile` line, run `--profile developer whoami` and then list workflows; if it fails again, report the detail and stop (check the server URL) instead of looping"
   ],
   "success_criteria": [
     "Does not claim success or list workflows after the key_rejected failure",
-    "States that the existing acme profile was kept unchanged",
+    "States that the existing developer profile was kept unchanged",
     "Retries at most once, and treats only exit 0 plus `✓ Saved profile` as success, followed by whoami",
     "Never asks for the key or secret and never reads the profile YAML"
   ]

@@ -4,22 +4,23 @@
   "topics": ["setup", "operations", "orkes"],
   "query": "Help me set up Conductor for the first time. I want to run it locally.",
   "expected_behavior": [
-    "Step 1: Check whether the `conductor` CLI is already installed via `conductor --version`",
-    "Step 2: If missing, check for npm/Node.js with `npm --version`",
-    "Step 3: Prefer `npx @conductor-oss/conductor-cli ...` for one-off use over a global install (no system change)",
-    "Step 4: If a global install is needed, **ask the user before** running `npm install -g @conductor-oss/conductor-cli` — never run it silently",
-    "Step 5: User stated 'run it locally' — proceed with the local-server option (Option A: `conductor server start`). The agent may briefly mention the remote-server option exists, but should not block on a choice the user has already made.",
-    "Step 6: Start the local server when the user chooses Option A, then verify with `conductor server status`",
+    "Step 1: Resolve the CLI with `sh <skill-dir>/scripts/ensure-cli.sh` (Rule 3); it accepts any `conductor` already installed and prints `CONDUCTOR_BIN`",
+    "Step 2: If it exits 3 (no CLI), ask once before installing: OK to install the Conductor CLI to ~/.local/bin? (one checksum-verified binary, no sudo, no Node); end the message with the question",
+    "Step 3: On yes, run the `--install` command the script printed; never `npm install -g`, never pipe a remote script into a shell. A local server needs no `--need create-app`",
+    "Step 4: No `conductor create-app` and no Developer Edition default: the user asked for local, which is OSS",
+    "Step 5: User stated 'run it locally' — proceed with the local server (`conductor server start`). The agent may briefly mention that a remote server or Developer Edition is also possible, but should not block on a choice the user has already made.",
+    "Step 6: Start the local server, then verify with `conductor server status`",
     "Step 7: Test connectivity with `conductor workflow list`",
     "Step 8: If 401/403, ask the user to inject CONDUCTOR_AUTH_KEY+CONDUCTOR_AUTH_SECRET or CONDUCTOR_AUTH_TOKEN through their shell, CI secret store, or secure environment settings; never request the values in chat, place them in CLI arguments, or echo them",
     "Step 9: Confirm setup with a final `conductor workflow list` and report success"
   ],
   "success_criteria": [
     "CLI presence is checked before any install attempt",
-    "Global `npm install -g` is only run AFTER explicit user confirmation",
+    "The CLI is installed only AFTER explicit user confirmation, via ensure-cli (no `npm install -g`)",
     "Agent proceeds with the local-server option (user already said 'run it locally') without re-asking; it's fine if the agent briefly notes the remote option exists",
     "Auth tokens, keys, and secrets are never echoed in output",
     "Setup verification is via a real `conductor workflow list` call, not an assumption",
-    "If auth is not required (no 401/403), the agent does not ask for credentials"
+    "If auth is not required (no 401/403), the agent does not ask for credentials",
+    "Does not run `conductor create-app` or default to Developer Edition for a local setup"
   ]
 }

@@ -4,14 +4,14 @@
   "topics": ["setup", "orkes"],
   "query": "I want to start using Conductor but I don't have anything set up yet",
   "expected_behavior": [
-    "Step 1: Resolve the CLI per Rule 3, asking before installing anything, and use the resulting `conductor` path for every later command",
+    "Step 1: Resolve the CLI per Rule 3 (`ensure-cli.sh` accepts any `conductor`); right before `create-app`, run it with `--need create-app`, asking before installing anything; use the printed `CONDUCTOR_BIN` for every later command",
     "Step 2: Run `conductor config list`. No profiles and no server named → use Developer Edition (`https://developer.orkescloud.com`, profile `developer`) and say so in one line, inviting a URL for another server",
-    "Step 3: Tell the user the browser will open to sign in and click **Approve**, then run `conductor create-app --server https://developer.orkescloud.com --profile developer` itself, with a long timeout. No key or secret is typed, pasted or printed",
+    "Step 3: Run `conductor create-app --server https://developer.orkescloud.com --profile developer` itself, with a long timeout, and tell the user to sign in and click **Approve** when the browser opens (after the CLI's `Opening <url>` line, or conditionally beforehand). No key or secret is typed, pasted or printed",
     "Step 4: Verify with `conductor --profile developer whoami` and `conductor --profile developer workflow list --json`",
-    "Step 5: If create-app times out (browser on another machine), give the printed `?setup=key` link and have the user run interactive `conductor config save --profile developer` in their own terminal"
+    "Step 5: If create-app fails `no_launchpad`, or times out with the browser on another machine, use the manual key path: the user creates a key (or uses the printed `?setup=key` link) and runs interactive `conductor config save --profile developer` in their own terminal"
   ],
   "success_criteria": [
-    "Connection uses `conductor create-app` run by the agent; sending the user to create an access key in the UI and save it with `config save` as the main path fails this criterion (it is only the timeout fallback)",
+    "Connection uses `conductor create-app` run by the agent; sending the user to create an access key in the UI and save it with `config save` as the main path fails this criterion (it is only the `no_launchpad` / timeout fallback)",
     "Developer Edition is the default only because no profiles exist and no server was named, and the agent says so",
     "No `localhost` profile or local server is set up unasked",
     "Credential values never enter chat, agent tool input, command arguments, clipboard reads, or raw-profile inspection",
