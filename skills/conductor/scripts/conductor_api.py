@@ -10,7 +10,9 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -555,6 +557,135 @@ def integration_path(name, model=None):
     if model is not None:
         path += f"/integration/{urllib.parse.quote(model, safe='')}"
     return path
+
+
+# ---------------------------------------------------------------------------
+# Worker credentials: profile -> .env, never shown
+# ---------------------------------------------------------------------------
+
+WORKER_ENV_KEYS = ("CONDUCTOR_SERVER_URL", "CONDUCTOR_AUTH_KEY", "CONDUCTOR_AUTH_SECRET")
+_ENV_LINE = re.compile(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=")
+
+
+def _env_quote(value):
+    """Single-quote a value for .env files (read literally by `. ./.env` and dotenv loaders)."""
+    if "'" in value or "\n" in value or "\r" in value:
+        return None
+    return f"'{value}'"
+
+
+def _gitignore_note(path):
+    """If path is inside a git work tree and not ignored, add its name to the .gitignore
+    next to it. Returns a sentence for the user, or None when nothing applies."""
+    folder = os.path.dirname(path)
+    name = os.path.basename(path)
+    try:
+        inside = subprocess.run(["git", "-C", folder, "rev-parse", "--is-inside-work-tree"],
+                                capture_output=True, text=True, timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        return None  # no git: nothing to protect from commits
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return None
+    ignored = subprocess.run(["git", "-C", folder, "check-ignore", "-q", "--", name],
+                             capture_output=True, text=True, timeout=15)
+    if ignored.returncode == 0:
+        return None
+    gitignore = os.path.join(folder, ".gitignore")
+    existing = ""
+    if os.path.exists(gitignore):
+        with open(gitignore) as f:
+            existing = f.read()
+    with open(gitignore, "a") as f:
+        if existing and not existing.endswith("\n"):
+            f.write("\n")
+        f.write(f"{name}\n")
+    return f"added {name} to {gitignore} so it isn't committed"
+
+
+def handle_worker_env(args):
+    """Write a saved profile's server URL, key and secret into a .env for a worker.
+    The values go from the profile file to the .env; they are never printed."""
+    profile_name = os.environ.get("CONDUCTOR_PROFILE", "").strip()
+    if not profile_name:
+        print("Error: worker-env needs --profile <name> (see `conductor config list`).", file=sys.stderr)
+        sys.exit(1)
+    profile = load_cli_profile(profile_name)
+    key, secret = profile.get("auth-key", ""), profile.get("auth-secret", "")
+    if not key or not secret:
+        kind = "a token-only" if profile.get("auth-token") else "an OSS or no-auth"
+        print(f"Error: profile {profile_name!r} has no auth key and secret ({kind} profile), so there is "
+              f"nothing for worker-env to write. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+    if not profile.get("server"):
+        print(f"Error: profile {profile_name!r} has no server. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+    values = {
+        "CONDUCTOR_SERVER_URL": normalize_server_url(profile["server"]),
+        "CONDUCTOR_AUTH_KEY": key,
+        "CONDUCTOR_AUTH_SECRET": secret,
+    }
+    quoted = {}
+    for name, value in values.items():
+        q = _env_quote(value)
+        if q is None:
+            print(f"Error: {name} in profile {profile_name!r} contains a quote or newline and can't be "
+                  f"written safely to a .env. Nothing was written.", file=sys.stderr)
+            sys.exit(1)
+        quoted[name] = q
+
+    out = os.path.abspath(os.path.expanduser(args.out))
+    if os.path.isdir(out):
+        out = os.path.join(out, ".env")
+    folder = os.path.dirname(out)
+    if not os.path.isdir(folder):
+        print(f"Error: folder {folder} does not exist. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+
+    lines = []
+    if os.path.exists(out):
+        with open(out) as f:
+            lines = f.read().splitlines()
+    present = sorted({m.group(1) for m in map(_ENV_LINE.match, lines) if m and m.group(1) in WORKER_ENV_KEYS})
+    if present and not args.overwrite:
+        print(f"Error: {out} already sets {', '.join(present)}. Rerun with --overwrite to replace "
+              f"them (other lines are kept). Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+
+    merged, done = [], set()
+    for line in lines:
+        m = _ENV_LINE.match(line)
+        name = m.group(1) if m else None
+        if name in WORKER_ENV_KEYS:
+            if name not in done:
+                merged.append(f"{name}={quoted[name]}")
+                done.add(name)
+            continue  # drop duplicate assignments of the same key
+        merged.append(line)
+    for name in WORKER_ENV_KEYS:
+        if name not in done:
+            merged.append(f"{name}={quoted[name]}")
+
+    fd, tmp = tempfile.mkstemp(dir=folder, prefix=".env.worker-env.")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write("\n".join(merged) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, out)
+    except OSError as e:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        print(f"Error: could not write {out}: {e.strerror}. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+
+    result = {"path": out, "wrote": list(WORKER_ENV_KEYS), "mode": "0600", "profile": profile_name}
+    note = _gitignore_note(out)
+    if note:
+        result["gitignore"] = note
+    output(result)
 
 
 def handle_server_info(args):
@@ -1157,6 +1288,10 @@ def main():
     p.add_argument("--target-id", required=True, help="integration name for INTEGRATION_PROVIDER")
     p.add_argument("--access", default="READ,EXECUTE", help="comma list of READ,CREATE,UPDATE,DELETE,EXECUTE")
 
+    p = sub.add_parser("worker-env", help="Write a saved profile's server URL, key and secret into a .env for a worker (values never printed)")
+    p.add_argument("--out", required=True, help="path to the .env file (or a folder: <folder>/.env)")
+    p.add_argument("--overwrite", action="store_true", help="replace CONDUCTOR_SERVER_URL / _AUTH_KEY / _AUTH_SECRET already in the file")
+
     p = sub.add_parser("access-list", help="Orkes: who has access to a resource (GET /auth/authorization/{type}/{id})")
     p.add_argument("--target-type", default="INTEGRATION_PROVIDER")
     p.add_argument("--target-id", required=True)
@@ -1225,6 +1360,7 @@ def main():
         "prompt-delete": handle_prompt_delete,
         "grant-access": handle_grant_access,
         "access-list": handle_access_list,
+        "worker-env": handle_worker_env,
     }
 
     handler = handlers.get(args.command)
