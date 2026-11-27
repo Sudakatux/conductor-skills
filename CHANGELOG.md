@@ -56,6 +56,9 @@ CLIs and `CONDUCTOR_*` environment variables keep working.
   (or `npm install -g` of it), and Rule 3.5 updates that way instead of
   `conductor update`, which would pull the upstream release without
   `create-app`. The installers serve `Sudakatux/conductor-skills@no-ensure-cli`.
+- `evaluations/create-app-cli-too-old.json` (step 4) and its entry in
+  `evaluations/README.md` accept the fork's `npx --yes github:…` form as the
+  update; upstream expects `conductor update` only.
 
 ## 1.8.0
 

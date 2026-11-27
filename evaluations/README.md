@@ -36,7 +36,7 @@ Tests what happens when a permission check (Claude Code auto mode) blocks the ag
 Worker credentials (references/workers.md). On Developer Edition with a saved profile, the agent offers `worker-env` to write the profile's credentials into the worker's `.env`, asks first, never reads or prints the `.env` or the profile YAML, and never tells the user to copy the key and secret by hand. On a local OSS server, no offer and no auth variables.
 
 ### create-app-cli-too-old.json
-SKILL.md Rule 3.5: an old `conductor` on PATH is fine until `create-app`; right before it, `create-app --help` fails, so the agent asks once to update (upstream `conductor update`; the fork build uses the `npx --yes github:Sudakatux/conductor-cli#conductor-login` form) and ends the turn. No update for other commands.
+SKILL.md Rule 3.5: an old `conductor` on PATH is fine until `create-app`; right before it, `create-app --help` fails, so the agent asks once to update (upstream `conductor update`; FORK ONLY, drop before upstreaming: the fork build uses the `npx --yes github:Sudakatux/conductor-cli#conductor-login` form) and ends the turn. No update for other commands.
 
 ### create-app-no-launchpad.json
 The CLI's `create-app failed (no_launchpad)` (the server isn't Orkes Developer Edition): no retry, no "click Approve", the manual key path (UI access key + interactive `config save` in the user's own terminal) or injected `CONDUCTOR_AUTH_*`.

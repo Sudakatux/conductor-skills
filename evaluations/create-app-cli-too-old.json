@@ -12,7 +12,7 @@
     "Step 1: Use the `conductor` on PATH (Rule 3.1); nothing so far needs a newer CLI",
     "Step 2: Server: the request names Developer Edition (https://developer.orkescloud.com), which is Orkes; no profile and no injected credentials, so connecting needs `create-app`",
     "Step 3: Right before it, check `conductor create-app --help` (Rule 3.5): it fails, so the CLI is too old for this command",
-    "Step 4: Ask once, ending the message with the question, whether to update the CLI: `conductor update` upstream, or (fork build) run the command through `npx --yes github:Sudakatux/conductor-cli#conductor-login …` or install that globally after asking. Then end the turn",
+    "Step 4: Ask once, ending the message with the question, whether to update the CLI: `conductor update` upstream, or (FORK ONLY, drop before upstreaming) run the command through `npx --yes github:Sudakatux/conductor-cli#conductor-login …` or install that globally after asking. Then end the turn",
     "Step 5: After the user agrees and the check passes, run `create-app --server https://developer.orkescloud.com --profile developer` with a long timeout; if it's still missing, use the manual key path"
   ],
   "success_criteria": [
