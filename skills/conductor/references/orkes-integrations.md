@@ -8,7 +8,7 @@ On **OSS** Conductor an LLM provider is enabled by putting its key in the server
 | Model (integration resource) | An exact provider model id registered under the integration, e.g. `gpt-4o-mini` | `model: "gpt-4o-mini"` |
 | Access | Permission for an application / group / role on the integration | none — missing access surfaces as a 403 / access error at run time |
 
-A `conductor` CLI new enough to pass `conductor integration add --help` (SKILL.md Rule 3.5) has `conductor integration add | list | models | add-model`. `integration add` asks for secrets with a **hidden prompt**, so the **user** runs it in their own terminal (§2); never the agent. Everything else here uses the bundled script (`conductor doctor` only checks *local* env vars, nothing on the cluster): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
+A `conductor` CLI whose `conductor integration add --help` exits 0 and prints the usage line `integration add [flags]` (SKILL.md Rule 3.5) has `conductor integration add | list | models | add-model`. `integration add` asks for secrets with a **hidden prompt**, so the **user** runs it in their own terminal (§2); never the agent. Everything else here uses the bundled script (`conductor doctor` only checks *local* env vars, nothing on the cluster): `export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"`. It authenticates from `CONDUCTOR_SERVER_URL` + `CONDUCTOR_AUTH_KEY` / `CONDUCTOR_AUTH_SECRET`, or from a saved CLI profile with `--profile <name>` (the script reads the profile itself and never prints it — you still never open the YAML). Every `*-env` flag takes an environment variable **name** (`OPENAI_API_KEY`), never `$OPENAI_API_KEY` or the value.
 
 ## 1. Check what exists — before writing any LLM task for Orkes
 
@@ -47,7 +47,7 @@ provider key, so the **user** types it.
    the one thing the user must act on, so it must contain the **complete,
    copy-pasteable command** in its own fenced code block — never "run the
    integration add command", never "the command above", never placeholders.
-   First check `conductor integration add --help` (SKILL.md Rule 3.5: too old →
+   First check `conductor integration add --help` (SKILL.md Rule 3.5: it must exit 0 and print `integration add [flags]`; otherwise it's too old →
    ask, then update). Fill in every value: the exact `conductor` command you use
    (with the npx prefix if that's how it runs), the session's profile, the type and the exact model id. Send it
    as plain text in your reply (not only inside a tool call, a summary or a
