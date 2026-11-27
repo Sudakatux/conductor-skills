@@ -1,6 +1,7 @@
 {
   "name": "First-Time Setup Walkthrough",
   "skills": ["conductor"],
+  "topics": ["setup", "operations", "orkes"],
   "query": "Help me set up Conductor for the first time. I want to run it locally.",
   "expected_behavior": [
     "Step 1: Check whether the `conductor` CLI is already installed via `conductor --version`",
@@ -19,6 +20,7 @@
     "Agent proceeds with the local-server option (user already said 'run it locally') without re-asking; it's fine if the agent briefly notes the remote option exists",
     "Auth tokens, keys, and secrets are never echoed in output",
     "Setup verification is via a real `conductor workflow list` call, not an assumption",
-    "If auth is not required (no 401/403), the agent does not ask for credentials"
+    "If auth is not required (no 401/403), the agent does not ask for credentials",
+    "Does not run `conductor create-app` or default to Developer Edition for a local setup"
   ]
 }

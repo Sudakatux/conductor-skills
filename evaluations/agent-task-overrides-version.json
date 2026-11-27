@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Our deployed `planner` agent has versions 1 and 2. From the `release_notes` workflow I need to: pin v2 for now, use `gpt-4o` for this call only, hand the agent the release metadata as structured data rather than pasting it into the prompt, make workflow retries not spawn a second agent run, and group all calls for one customer so I can find them later. Show me the AGENT task.",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md `### AGENT` (per-call override row: `version`, `sessionId`, `context{}`, `media[]`, `model`, `timeoutSeconds`, `idempotencyKey`, `credentials{}`) and references/agents.md §8 operate / §12 gotchas (`sessionId` groups but does not replay history).",

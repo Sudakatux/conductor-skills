@@ -1,26 +1,20 @@
 {
-  "name": "Install CLI and Create Standard Profiles",
+  "name": "First-Time Setup — Connect with create-app",
   "skills": ["conductor"],
+  "topics": ["setup", "orkes"],
   "query": "I want to start using Conductor but I don't have anything set up yet",
   "expected_behavior": [
-    "Step 1: Check `conductor --version` before attempting installation.",
-    "Step 2: If missing, prefer `npx @conductor-oss/conductor-cli` for one-off use. Ask before any global npm install; if npm is unavailable, explain the Node.js prerequisite or fallback limitations.",
-    "Step 3: Start the standard dual-profile onboarding rather than asking the user to choose only one server.",
-    "Step 4: Open https://developer.orkescloud.com/ visibly when browser automation is available, let the user sign in, and use visible navigation to Access Control → Applications.",
-    "Step 5: Guide the user to create a least-privilege application and hand control to them before Create access key. Never observe the one-time secret or request credentials in chat.",
-    "Step 6: Have the user run interactive `conductor config save --profile developer` and directly enter `https://developer.orkescloud.com/api`, Enterprise, and their API key + secret.",
-    "Step 7: Have the user run interactive `conductor config save --profile localhost` with `http://localhost:8080/api`, OSS, and no auth. Saving it does not require starting the server.",
-    "Step 8: Verify with `conductor config list`, `conductor --profile developer whoami`, and `conductor --profile developer workflow list --json`; verify localhost only when its server is running.",
-    "Step 9: Default later skill commands to `--profile developer`; use `--profile localhost` when the user asks for local."
+    "Step 1: Resolve the CLI per Rule 3 (on PATH, else `npx --yes …`, a global install only after asking); right before `create-app`, check `conductor create-app --help` (Rule 3.5: too old → ask, then update)",
+    "Step 2: Run `conductor config list`. No profiles and no server named → use Developer Edition (`https://developer.orkescloud.com`, profile `developer`) and say so in one line, inviting a URL for another server",
+    "Step 3: Run `conductor create-app --server https://developer.orkescloud.com --profile developer` itself, with a long timeout, and tell the user to sign in and click **Approve** when the browser opens (after the CLI's `Opening <url>` line, or conditionally beforehand). No key or secret is typed, pasted or printed",
+    "Step 4: Verify with `conductor --profile developer whoami` and `conductor --profile developer workflow list --json`",
+    "Step 5: If create-app fails `no_launchpad`, or times out with the browser on another machine, use the manual key path: the user creates a key (or uses the printed `?setup=key` link) and runs interactive `conductor config save --profile developer` in their own terminal"
   ],
   "success_criteria": [
-    "CLI presence is checked before installation",
-    "One-off npx is preferred and global npm installation requires explicit consent",
-    "Both `developer` and `localhost` profiles are created for an unqualified first-time setup",
-    "Developer Edition browser navigation is visible and access-key creation is handed off to the user",
+    "Connection uses `conductor create-app` run by the agent; sending the user to create an access key in the UI and save it with `config save` as the main path fails this criterion (it is only the `no_launchpad` / timeout fallback)",
+    "Developer Edition is the default only because no profiles exist and no server was named, and the agent says so",
+    "No `localhost` profile or local server is set up unasked",
     "Credential values never enter chat, agent tool input, command arguments, clipboard reads, or raw-profile inspection",
-    "The localhost profile is saved without unnecessarily starting a server",
-    "Developer profile verification uses a real authenticated API call",
-    "Later unqualified operations use `--profile developer`"
+    "Verification uses a real authenticated call with `--profile developer`"
   ]
 }

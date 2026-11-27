@@ -291,25 +291,87 @@ def call_llm(provider, api_key, model, system, user_message, max_tokens=4096):
 # Skill context loader
 # ---------------------------------------------------------------------------
 
-def load_skill_context():
-    """Load SKILL.md, references, and examples as context for the agent."""
+# An eval may list "topics"; it then gets SKILL.md plus only these files (paths
+# relative to skills/conductor). An eval without "topics" gets everything, as
+# before. Every references/*.md and examples/*.md must belong to some topic
+# (scripts/validate_plugin.py checks), so a new file is never unreachable.
+TOPICS = {
+    "setup": [
+        "references/setup.md", "references/cli-index.md",
+        "references/fallback-cli.md", "references/troubleshooting.md",
+    ],
+    "orkes": ["references/orkes.md", "references/orkes-integrations.md"],
+    "workflows": [
+        "references/workflow-definition.md", "references/template-resolution.md",
+        "references/graaljs-gotchas.md",
+        "examples/create-and-run-workflow.md", "examples/fork-join.md",
+        "examples/sub-workflow.md", "examples/do-while-loop.md",
+    ],
+    "operations": [
+        "references/cli-index.md", "references/api-reference.md",
+        "references/troubleshooting.md",
+        "examples/monitor-and-retry.md", "examples/signal-wait-task.md",
+    ],
+    "llm": [
+        "examples/llm-chat.md", "examples/llm-rag.md", "examples/llm-chaining.md",
+        "examples/ai-agent-mcp.md", "examples/ai-agent-loop.md",
+    ],
+    "agents": [
+        "references/agents.md", "references/agent-sdks.md",
+        "examples/agent-deploy-and-invoke.md", "examples/agent-a2a-remote.md",
+    ],
+    "workers": ["references/workers.md"],
+    "optimization": ["references/optimization.md", "examples/review-workflow.md"],
+    "schedules": ["references/schedules.md"],
+    "visualization": ["references/visualization.md"],
+}
+
+
+def skill_files():
+    """Every file the full context loads, in load order (paths relative to SKILL_DIR)."""
+    refs = sorted((SKILL_DIR / "references").glob("*.md"))
+    examples = sorted((SKILL_DIR / "examples").glob("*.md"))
+    return [p.relative_to(SKILL_DIR).as_posix() for p in (*refs, *examples)]
+
+
+def files_for_topics(topics):
+    """Files for a topic list, in the full context's load order. None = all files."""
+    all_files = skill_files()
+    if topics is None:
+        return all_files
+    unknown = [t for t in topics if t not in TOPICS]
+    if unknown:
+        raise ValueError(f"unknown eval topic(s) {unknown}; known: {sorted(TOPICS)}")
+    wanted = {f for t in topics for f in TOPICS[t]}
+    return [f for f in all_files if f in wanted]
+
+
+def load_skill_context(topics=None):
+    """SKILL.md plus the references/examples for these topics (None = all) as the agent's context."""
     parts = []
 
     skill_md = SKILL_DIR / "SKILL.md"
     if skill_md.exists():
         parts.append(f"# SKILL.md\n\n{skill_md.read_text()}")
 
-    refs_dir = SKILL_DIR / "references"
-    if refs_dir.exists():
-        for ref_file in sorted(refs_dir.glob("*.md")):
-            parts.append(f"# {ref_file.name}\n\n{ref_file.read_text()}")
-
-    examples_dir = SKILL_DIR / "examples"
-    if examples_dir.exists():
-        for ex_file in sorted(examples_dir.glob("*.md")):
-            parts.append(f"# Example: {ex_file.stem}\n\n{ex_file.read_text()}")
+    for rel in files_for_topics(topics):
+        path = SKILL_DIR / rel
+        if rel.startswith("examples/"):
+            parts.append(f"# Example: {path.stem}\n\n{path.read_text()}")
+        else:
+            parts.append(f"# {path.name}\n\n{path.read_text()}")
 
     return "\n\n---\n\n".join(parts)
+
+
+def eval_topics(eval_file):
+    """The eval's "topics" list, or None when it has none (load everything)."""
+    try:
+        data = json.loads(Path(eval_file).read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    topics = data.get("topics") if isinstance(data, dict) else None
+    return list(topics) if topics else None
 
 
 # ---------------------------------------------------------------------------
@@ -320,13 +382,9 @@ def run_agent(provider, api_key, model, skill_context, query, verbose=False):
     """Send the eval query to an LLM acting as an agent with the skill."""
     system = f"""You are an AI coding agent with access to the Conductor workflow skill. Your tools include: Bash (shell commands), Read/Write/Edit (files), Grep/Glob (search).
 
-You must follow the skill instructions precisely. Key rules:
+You must follow the skill instructions precisely. SKILL.md is the authority on connecting and auth (Rule 15: server, then flavor, then connect); these reminders never override it. Key rules:
 - CLI resolution follows the skill's Rule 3: use `conductor` if on PATH; otherwise prefer `npx @conductor-oss/conductor-cli ...`; run `npm install -g @conductor-oss/conductor-cli` ONLY after the user has explicitly agreed — in a plan that means ending your message with that question, never "proceeding". Fall back to `scripts/conductor_api.py` only when Node.js/npm cannot be installed.
-- For an unqualified first-time setup, create both standard interactive profiles: `developer` (`https://developer.orkescloud.com/api`, Enterprise, key + secret) and `localhost` (`http://localhost:8080/api`, OSS, no auth). Default later commands to `--profile developer`; honor an explicit target instead.
-- For the developer profile, visibly open Developer Edition when browser automation is available, let the user sign in, navigate through Access Control > Applications, and hand control to the user before Create access key. The user enters the one-time secret directly into the interactive CLI prompt; never read the page afterward, clipboard, terminal input, or profile YAML.
-- Request auth setup only when the server returns 401/403 or the user explicitly says auth is required. Never ask the user to paste credential values into chat; use securely injected CONDUCTOR_AUTH_* variables and never put values in command arguments.
-- If the user supplies a root remote URL, append `/api`; preserve an existing `/api` or custom non-root path. Set CONDUCTOR_SERVER_TYPE=Enterprise for Orkes.
-- Create profiles interactively with `conductor config save --profile developer` and `conductor config save --profile localhost`. Discover profiles with `conductor config list`; never read raw profile YAML.
+- Never ask the user to paste credentials into chat, never put credential values in command arguments, and never read raw profile YAML.
 - ALWAYS verify the setup works with a final connectivity check (e.g. `conductor workflow list`).
 - NEVER use `python3 -c` for any purpose.
 - NEVER echo auth tokens, keys, or secrets in output — use env vars or CLI flags, and redact any sensitive values.
@@ -340,7 +398,7 @@ When responding, describe the exact steps you would take:
 1. Show the exact bash commands you would run (real commands, not placeholders)
 2. Show the exact file contents you would write (complete JSON, not truncated)
 3. Explain your decision logic at the branching points that matter (not every hypothetical path). For example:
-   - If the user gives no setup target: create both standard profiles and make developer the skill default
+   - If the user gives no setup target: follow the skill's server/profile selection (Rule 15)
    - If a command returns 401/403: describe how you would handle auth
    - If a tool/CLI is missing: show the fallback approach
 4. Show what you would communicate to the user at each step
@@ -609,7 +667,14 @@ Examples:
     # Context-size probe — runs before any provider/API-key resolution.
     if args.print_context_size:
         size = len(load_skill_context())
-        print(f"Eval context size: {size} chars (~{size // 4} tokens)")
+        print(f"Eval context size (full load): {size} chars (~{size // 4} tokens)")
+        sized = [(len(load_skill_context(eval_topics(f))), f.name)
+                 for f in sorted(EVAL_DIR.glob("*.json"))]
+        if sized:
+            biggest, name = max(sized)
+            tagged = sum(1 for f in sorted(EVAL_DIR.glob("*.json")) if eval_topics(f))
+            print(f"Largest per-eval context: {biggest} chars (~{biggest // 4} tokens), {name}")
+            print(f"Evals with topics: {tagged}/{len(sized)}")
         sys.exit(0)
 
     # Resolve providers
@@ -632,10 +697,17 @@ Examples:
         print("No evaluation files found.", file=sys.stderr)
         sys.exit(1)
 
-    # Load skill context once
-    print("Loading skill context...")
-    skill_context = load_skill_context()
-    print(f"Loaded {len(skill_context)} chars of skill context")
+    # Skill context per eval: SKILL.md plus the eval's topics (all files when it has none).
+    context_cache = {}
+
+    def context_for(eval_file):
+        topics = eval_topics(eval_file)
+        key = tuple(sorted(topics)) if topics else None
+        if key not in context_cache:
+            context_cache[key] = load_skill_context(topics)
+        return context_cache[key]
+
+    print(f"Full skill context: {len(load_skill_context())} chars (evals with \"topics\" load less)")
     print(f"Running {len(eval_files)} evaluation(s)")
     print(f"  Agent: {provider}:{args.model}")
     print(f"  Judge: {judge_provider}:{judge_model}")
@@ -651,7 +723,7 @@ Examples:
             return run_single_eval(
                 provider, api_key, args.model,
                 judge_provider, judge_api_key, judge_model,
-                skill_context, eval_file, args.verbose,
+                context_for(eval_file), eval_file, args.verbose,
             )
         except SystemExit:
             raise

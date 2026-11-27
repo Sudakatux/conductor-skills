@@ -10,7 +10,9 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -499,7 +501,7 @@ def handle_agent_stop(args):
 
 # ---------------------------------------------------------------------------
 # Orkes integrations: AI providers, models, access (references/orkes-integrations.md).
-# The `conductor` CLI has no integration commands. Orkes-only: OSS returns 404.
+# The CLI's `integration add` (hidden key prompt) is for the user; these cover the rest. Orkes-only: OSS returns 404.
 # ---------------------------------------------------------------------------
 
 _SECRET_HINTS = ("key", "secret", "token", "password", "credential", "file")
@@ -555,6 +557,135 @@ def integration_path(name, model=None):
     if model is not None:
         path += f"/integration/{urllib.parse.quote(model, safe='')}"
     return path
+
+
+# ---------------------------------------------------------------------------
+# Worker credentials: profile -> .env, never shown
+# ---------------------------------------------------------------------------
+
+WORKER_ENV_KEYS = ("CONDUCTOR_SERVER_URL", "CONDUCTOR_AUTH_KEY", "CONDUCTOR_AUTH_SECRET")
+_ENV_LINE = re.compile(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=")
+
+
+def _env_quote(value):
+    """Single-quote a value for .env files (read literally by `. ./.env` and dotenv loaders)."""
+    if "'" in value or "\n" in value or "\r" in value:
+        return None
+    return f"'{value}'"
+
+
+def _gitignore_note(path):
+    """If path is inside a git work tree and not ignored, add its name to the .gitignore
+    next to it. Returns a sentence for the user, or None when nothing applies."""
+    folder = os.path.dirname(path)
+    name = os.path.basename(path)
+    try:
+        inside = subprocess.run(["git", "-C", folder, "rev-parse", "--is-inside-work-tree"],
+                                capture_output=True, text=True, timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        return None  # no git: nothing to protect from commits
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return None
+    ignored = subprocess.run(["git", "-C", folder, "check-ignore", "-q", "--", name],
+                             capture_output=True, text=True, timeout=15)
+    if ignored.returncode == 0:
+        return None
+    gitignore = os.path.join(folder, ".gitignore")
+    existing = ""
+    if os.path.exists(gitignore):
+        with open(gitignore) as f:
+            existing = f.read()
+    with open(gitignore, "a") as f:
+        if existing and not existing.endswith("\n"):
+            f.write("\n")
+        f.write(f"{name}\n")
+    return f"added {name} to {gitignore} so it isn't committed"
+
+
+def handle_worker_env(args):
+    """Write a saved profile's server URL, key and secret into a .env for a worker.
+    The values go from the profile file to the .env; they are never printed."""
+    profile_name = os.environ.get("CONDUCTOR_PROFILE", "").strip()
+    if not profile_name:
+        print("Error: worker-env needs --profile <name> (see `conductor config list`).", file=sys.stderr)
+        sys.exit(1)
+    profile = load_cli_profile(profile_name)
+    key, secret = profile.get("auth-key", ""), profile.get("auth-secret", "")
+    if not key or not secret:
+        kind = "a token-only" if profile.get("auth-token") else "an OSS or no-auth"
+        print(f"Error: profile {profile_name!r} has no auth key and secret ({kind} profile), so there is "
+              f"nothing for worker-env to write. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+    if not profile.get("server"):
+        print(f"Error: profile {profile_name!r} has no server. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+    values = {
+        "CONDUCTOR_SERVER_URL": normalize_server_url(profile["server"]),
+        "CONDUCTOR_AUTH_KEY": key,
+        "CONDUCTOR_AUTH_SECRET": secret,
+    }
+    quoted = {}
+    for name, value in values.items():
+        q = _env_quote(value)
+        if q is None:
+            print(f"Error: {name} in profile {profile_name!r} contains a quote or newline and can't be "
+                  f"written safely to a .env. Nothing was written.", file=sys.stderr)
+            sys.exit(1)
+        quoted[name] = q
+
+    out = os.path.abspath(os.path.expanduser(args.out))
+    if os.path.isdir(out):
+        out = os.path.join(out, ".env")
+    folder = os.path.dirname(out)
+    if not os.path.isdir(folder):
+        print(f"Error: folder {folder} does not exist. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+
+    lines = []
+    if os.path.exists(out):
+        with open(out) as f:
+            lines = f.read().splitlines()
+    present = sorted({m.group(1) for m in map(_ENV_LINE.match, lines) if m and m.group(1) in WORKER_ENV_KEYS})
+    if present and not args.overwrite:
+        print(f"Error: {out} already sets {', '.join(present)}. Rerun with --overwrite to replace "
+              f"them (other lines are kept). Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+
+    merged, done = [], set()
+    for line in lines:
+        m = _ENV_LINE.match(line)
+        name = m.group(1) if m else None
+        if name in WORKER_ENV_KEYS:
+            if name not in done:
+                merged.append(f"{name}={quoted[name]}")
+                done.add(name)
+            continue  # drop duplicate assignments of the same key
+        merged.append(line)
+    for name in WORKER_ENV_KEYS:
+        if name not in done:
+            merged.append(f"{name}={quoted[name]}")
+
+    fd, tmp = tempfile.mkstemp(dir=folder, prefix=".env.worker-env.")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write("\n".join(merged) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, out)
+    except OSError as e:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        print(f"Error: could not write {out}: {e.strerror}. Nothing was written.", file=sys.stderr)
+        sys.exit(1)
+
+    result = {"path": out, "wrote": list(WORKER_ENV_KEYS), "mode": "0600", "profile": profile_name}
+    note = _gitignore_note(out)
+    if note:
+        result["gitignore"] = note
+    output(result)
 
 
 def handle_server_info(args):
@@ -648,6 +779,66 @@ def handle_model_list(args):
     params = {"activeOnly": "true"} if args.active_only else None
     url = build_url(base, integration_path(args.provider) + "/integration", params)
     output(redact(request_json(url, token)))
+
+
+def try_json(url, token):
+    """GET without exiting: (status, data). While polling, 403/404 are answers, not errors."""
+    headers = {"Accept": "application/json"}
+    if token:
+        headers["X-Authorization"] = token
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30) as resp:
+            raw = resp.read().decode()
+            return resp.status, (json.loads(raw) if raw else None)
+    except urllib.error.HTTPError as e:
+        return e.code, None
+    except urllib.error.URLError:
+        return 0, None
+
+
+def usable_integration(base, token, itype, model=None, fetch=try_json):
+    """(status, found, names): an enabled integration of itype this identity can see, holding
+    an enabled model (when given). names lists every visible integration of that type."""
+    status, providers = fetch(build_url(base, "/integrations/provider"), token)
+    if status != 200:
+        return status, None, []
+    candidates = [p for p in providers or [] if p.get("type") == itype and p.get("enabled", True)]
+    names = [p.get("name") for p in candidates]
+    for p in candidates:
+        if not model:
+            return 200, {"llmProvider": p.get("name")}, names
+        s, models = fetch(build_url(base, integration_path(p.get("name")) + "/integration"), token)
+        if s == 200 and any(m.get("api") == model and m.get("enabled", True) for m in models or []):
+            return 200, {"llmProvider": p.get("name"), "model": model}, names
+    return 200, None, names
+
+
+def handle_integration_wait(args):
+    require_enterprise()
+    base, token = get_config()
+    deadline = time.monotonic() + args.timeout
+    names = []
+    while True:
+        status, found, names = usable_integration(base, token, args.type, args.model)
+        if found:
+            output({"ready": True, **found})
+            return
+        if status in (401, 403):
+            output({"ready": False, "status": status,
+                    "reason": "this application may not list integrations; ask an admin"})
+            sys.exit(4)
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(args.interval)
+    output({
+        "ready": False,
+        "type": args.type,
+        "model": args.model,
+        "visibleIntegrations": names,
+        "next": ("visible but missing the model: add it, or share it with this application"
+                 if names else "no integration of this type is shared with this application yet"),
+    })
+    sys.exit(3)
 
 
 def handle_model_save(args):
@@ -1029,6 +1220,12 @@ def main():
     p = sub.add_parser("integration-delete", help="Orkes: delete an integration provider")
     p.add_argument("--name", required=True)
 
+    p = sub.add_parser("integration-wait", help="Orkes: wait until an integration of a type (with a model) is usable by this application")
+    p.add_argument("--type", required=True, help="integration type, e.g. anthropic")
+    p.add_argument("--model", default=None, help="exact model id that must be registered and enabled")
+    p.add_argument("--timeout", type=int, default=300, help="seconds to wait (default 300)")
+    p.add_argument("--interval", type=int, default=5, help="seconds between checks (default 5)")
+
     p = sub.add_parser("model-list", help="Orkes: list models registered under an integration")
     p.add_argument("--provider", required=True, help="integration name")
     p.add_argument("--active-only", action="store_true")
@@ -1091,6 +1288,10 @@ def main():
     p.add_argument("--target-id", required=True, help="integration name for INTEGRATION_PROVIDER")
     p.add_argument("--access", default="READ,EXECUTE", help="comma list of READ,CREATE,UPDATE,DELETE,EXECUTE")
 
+    p = sub.add_parser("worker-env", help="Write a saved profile's server URL, key and secret into a .env for a worker (values never printed)")
+    p.add_argument("--out", required=True, help="path to the .env file (or a folder: <folder>/.env)")
+    p.add_argument("--overwrite", action="store_true", help="replace CONDUCTOR_SERVER_URL / _AUTH_KEY / _AUTH_SECRET already in the file")
+
     p = sub.add_parser("access-list", help="Orkes: who has access to a resource (GET /auth/authorization/{type}/{id})")
     p.add_argument("--target-type", default="INTEGRATION_PROVIDER")
     p.add_argument("--target-id", required=True)
@@ -1146,6 +1347,7 @@ def main():
         "integration-get": handle_integration_get,
         "integration-save": handle_integration_save,
         "integration-delete": handle_integration_delete,
+        "integration-wait": handle_integration_wait,
         "model-list": handle_model_list,
         "model-save": handle_model_save,
         "model-delete": handle_model_delete,
@@ -1158,6 +1360,7 @@ def main():
         "prompt-delete": handle_prompt_delete,
         "grant-access": handle_grant_access,
         "access-list": handle_access_list,
+        "worker-env": handle_worker_env,
     }
 
     handler = handlers.get(args.command)

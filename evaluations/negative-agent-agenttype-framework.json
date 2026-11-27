@@ -1,6 +1,7 @@
 {
   "name": "Refuse a Framework Name as agentType — Rewrite to conductor + name, Deploy via SDK",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Add this task to my `helpdesk` workflow and register it:\n\n```json\n{\n  \"name\": \"ask_support\",\n  \"taskReferenceName\": \"ask_support\",\n  \"type\": \"AGENT\",\n  \"inputParameters\": {\n    \"agentType\": \"langgraph\",\n    \"graph\": \"agents.support:graph\",\n    \"prompt\": \"${workflow.input.question}\"\n  }\n}\n```\n\nThe graph is our LangGraph `create_react_agent` in `agents/support.py`.",
   "expected_behavior": [
     "Step 1: Consult SKILL.md Rule 10, references/workflow-definition.md (`### AGENT` — `agentType` values), references/agents.md (decision table, framework execution model), references/agent-sdks.md (LangGraph row), and references/optimization.md rule F7.",

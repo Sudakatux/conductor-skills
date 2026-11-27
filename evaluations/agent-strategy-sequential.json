@@ -1,6 +1,7 @@
 {
   "name": "Researcher → Writer → Editor Content Pipeline (Strategy.SEQUENTIAL) With Offline Tests",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "I want a content-pipeline agent in Python: a researcher gathers facts on a topic, a writer drafts an article from those facts, and an editor polishes the draft. Each stage should only see the previous stage's output. I also want to unit-test the pipeline without hitting an LLM or a server.",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `sequential` row: each child receives the previous child's output; `>>` is sugar for `strategy=Strategy.SEQUENTIAL`; children compile to `SUB_WORKFLOW`s), references/agents.md §4 and §11 (test ladder — `mock_run`, `MockEvent`, `expect`, `assert_*`), and references/optimization.md F1/F3. WebFetch the Python SDK `docs/agents/` before pinning `conductor-python[agents]`.",

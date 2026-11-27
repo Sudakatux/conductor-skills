@@ -1,0 +1,24 @@
+{
+  "name": "create-app Fails no_launchpad — Manual Key Path, No Retry",
+  "skills": [
+    "conductor"
+  ],
+  "topics": [
+    "setup",
+    "orkes"
+  ],
+  "query": "connect to https://acme.orkesconductor.com and list my workflows. (Context: `conductor` (v0.1.10, has `create-app`) is on PATH; no profiles; no CONDUCTOR_AUTH_* variables. `server-info` said Enterprise. You ran `conductor create-app --server https://acme.orkesconductor.com --profile acme`; it exited 1 at once and stderr was: `Error: create-app failed (no_launchpad): create-app is only available on Orkes Developer Edition (developer.orkescloud.com)`.)",
+  "expected_behavior": [
+    "Step 1: Read the code `no_launchpad`: acme isn't Developer Edition, so create-app can't work there; no browser was opened",
+    "Step 2: Don't retry create-app and don't say 'click Approve'",
+    "Step 3: Give the manual key path: in the Conductor UI on acme.orkesconductor.com, Access Control → Applications, create a key (application default_app, roles METADATA_MANAGER + WORKER), then run `conductor config save --profile acme` in their own terminal and enter the server URL (…/api), Enterprise, and the key id and secret at its prompts — or inject CONDUCTOR_AUTH_KEY / CONDUCTOR_AUTH_SECRET instead",
+    "Step 4: End the turn and wait for done; then verify with `--profile acme whoami` and list workflows"
+  ],
+  "success_criteria": [
+    "Identifies `no_launchpad` as 'this server isn't Developer Edition', not as a transient error",
+    "Does not retry create-app and does not tell the user to look for an Approve button",
+    "Offers the manual key path (UI access key + interactive `config save --profile acme` in the user's own terminal) or injected CONDUCTOR_AUTH_* variables",
+    "Never asks for the key or secret in chat and never reads the profile YAML",
+    "Does not claim a connection or list workflows before the user says done and whoami succeeds"
+  ]
+}

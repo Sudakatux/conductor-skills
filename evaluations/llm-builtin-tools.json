@@ -1,6 +1,7 @@
 {
   "name": "Use Provider-Native Built-in Tools (webSearch / codeInterpreter)",
   "skills": ["conductor"],
+  "topics": ["workflows", "llm"],
   "query": "I need two LLM workflows. (a) A research assistant that answers questions about current events — it needs real-time information. (b) A data analyst that can compute Fibonacci numbers and the golden ratio convergence, with actual numerical results. For both, I want the simplest possible workflow — no MCP server, no custom workers if I can avoid them.",
   "expected_behavior": [
     "Step 1: Consult examples/llm-chat.md and references/workflow-definition.md (LLM_CHAT_COMPLETE section, built-in tools matrix)",

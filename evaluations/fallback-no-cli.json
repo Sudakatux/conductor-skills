@@ -1,6 +1,7 @@
 {
   "name": "Fallback Script When CLI Unavailable",
   "skills": ["conductor"],
+  "topics": ["setup"],
   "query": "List my workflows. I can't install npm or node on this machine.",
   "expected_behavior": [
     "Step 1: Check if `conductor` CLI is available — it's not",
@@ -18,6 +19,7 @@
     "CONDUCTOR_SERVER_URL is verified before making API calls",
     "Script output is parsed and presented clearly to the user",
     "User is informed they're using the fallback and why",
-    "Auth tokens are never echoed in output"
+    "Auth tokens are never echoed in output",
+    "If the server is Orkes (including Developer Edition when nothing is configured), says there is no `create-app` or `config save` without the CLI and uses an existing profile or asks the user to inject CONDUCTOR_AUTH_KEY + CONDUCTOR_AUTH_SECRET (a key from Access Control → Applications) — never asks for the values in chat"
   ]
 }

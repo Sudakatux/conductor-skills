@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows"],
   "query": "We're a Java shop on Gradle using LangChain4j. I have a class with one `@Tool` method `lookupInventory(String sku)`. Turn it into a Conductor agent called `inventory_agent` that we can run locally and deploy.",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (decision table → path 3; Java column) and references/agent-sdks.md (Java install/import matrix; LangChain4j row: `org.conductoross.conductor.ai.frameworks.LangChain4jAgent.from(name, model, instructions, toolObjs...)`; artifact is `conductor-client-ai`).",

@@ -1,6 +1,7 @@
 {
   "name": "Run a Google ADK LlmAgent (Gemini, function tools, sub_agent) on Conductor",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "Our team uses Google ADK. We have an `LlmAgent` on `gemini-2.0-flash` with two Python function tools (`search_kb`, `create_ticket`) and one `sub_agents=[escalation_agent]`. Get it running on Conductor.",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (decision table → path 3; Google ADK is compiled into a Conductor graph) and references/agent-sdks.md (Google ADK row for Python: pass the ADK object directly; Gemini model prefix is `google_gemini/`).",

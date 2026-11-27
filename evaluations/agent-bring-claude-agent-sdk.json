@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "We already use the Claude Agent SDK (Claude Code) to fix failing CI builds — it edits files and runs Bash. I want to run it as a Conductor agent so runs are durable and visible, keep Claude's built-in tools, let it edit files without prompting, and cap it at 50 turns. It needs a GitHub token. Our platform team also asked whether the TypeScript or Java SDK can do this.",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §4 (the Claude Agent SDK row: `[claude]` extra; `Agent(name, model=ClaudeCode(\"sonnet\"), instructions, tools=[\"Read\", \"Glob\", \"Grep\"])`; built-in Claude tool names only; passthrough → `serve()` mandatory; TS has the `ClaudeCode` model class only, no passthrough bridge) and §7 (the `claude_code_fixer` example with `permission_mode=ClaudeCode.PermissionMode.ACCEPT_EDITS`, `credentials=[\"GITHUB_TOKEN\"]`, `max_turns=50`), the unsupported-cells paragraph (\"Claude Agent SDK outside Python\"), references/agents.md §6 (passthrough: the whole loop runs inside the SDK worker, the server sees one SIMPLE task, provider key needed where `serve()` runs), §12, references/optimization.md F1, F2, F3, F5, and examples/agents/python/claude_agent_sdk_bridge.py. WebFetch the Python SDK `docs/agents/` before pinning (Rule 7.3).",

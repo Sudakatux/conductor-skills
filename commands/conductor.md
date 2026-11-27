@@ -3,7 +3,9 @@ name: conductor
 description: Conductor command menu — pick a structured action or describe what you want
 ---
 
-The user invoked `/conductor` without a sub-action. Show the four structured subcommands and ask what they want to do.
+**If text follows `/conductor`** (e.g. `/conductor build a workflow that checks the weather`, or a pasted Launch Pad prompt), it is a task, not a menu request: run the connect step first ([SKILL.md](../skills/conductor/SKILL.md) Rule 15), then do the task. Don't show the menu.
+
+Otherwise the user invoked `/conductor` without a sub-action. Show the four structured subcommands and ask what they want to do.
 
 **Structured commands** (each is a guided procedure):
 

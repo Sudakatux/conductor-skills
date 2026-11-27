@@ -4,6 +4,62 @@ All notable changes to the Conductor Skills plugin are documented here. Versions
 correspond to the shared `VERSION` file (see [PUBLISHING.md](PUBLISHING.md) for
 what that means across the three distribution channels).
 
+## 2.0.0
+
+Setup changed: how the agent picks a server and connects. Existing profiles,
+CLIs and `CONDUCTOR_*` environment variables keep working.
+
+### Changed
+
+- **Server, then flavor, then connect.** The agent picks the server in a fixed
+  order: a URL or "Developer Edition" in the request, `CONDUCTOR_SERVER_URL`, a
+  single working profile, a working `developer` profile among several (it says
+  so; otherwise it asks), a running local server, and only then Developer
+  Edition (announced). It probes OSS vs Orkes **before** connecting: OSS needs
+  no auth; Orkes reuses a working profile or injected `CONDUCTOR_AUTH_*`.
+- **Connecting to Developer Edition** uses `conductor create-app`: the user
+  signs in and clicks Approve in the browser, and no key or secret is typed or
+  pasted. On any other server the CLI stops with `no_launchpad`, and the user
+  creates an access key in the UI and saves it with `conductor config save`.
+- **The CLI.** Resolution is unchanged (on PATH, else `npx --yes`, a global npm
+  install only after asking, else the Python fallback); `npx` now passes
+  `--yes`, never `sudo`, and an nvm/asdf hint comes before the fallback. A
+  newer CLI is needed only for `create-app` and `conductor integration add`:
+  the agent checks `<command> --help` right before running them and, if it's
+  too old, asks and runs `conductor update`.
+- **Missing LLM integrations on Orkes** are created by the user with
+  `conductor integration add` in their own terminal (hidden key prompt), or in
+  the UI.
+- The skill description no longer promises local auto-detection; it says it
+  works with OSS Conductor and Orkes Conductor.
+
+### Added
+
+- `conductor_api.py worker-env --profile <p> --out <dir>/.env [--overwrite]`:
+  writes a saved profile's `CONDUCTOR_SERVER_URL`, `CONDUCTOR_AUTH_KEY` and
+  `CONDUCTOR_AUTH_SECRET` into a worker's `.env` (atomic, 0600, other lines
+  kept, `.gitignore` updated in a git repo) and prints only the names. On
+  Orkes, the skill offers it (asking first) instead of having anyone copy the
+  key and secret out of the profile YAML, and never reads the `.env` back.
+- Evals: `"topics"` per eval, so the runner sends SKILL.md plus only the
+  references and examples an eval needs (largest per-eval context about 210k
+  chars, down from 338k). `validate_plugin.py` checks topics and budgets the
+  largest per-eval context.
+- Evals for CI with injected credentials, existing `developer` + `localhost`
+  profiles, a running local server, a Launch Pad prompt naming Developer
+  Edition, `create-app failed (no_launchpad)`, and a CLI too old for
+  `create-app`.
+
+### Fork only (drop before release)
+
+- Rule 3 and setup.md run the CLI as `npx --yes github:Sudakatux/conductor-cli#conductor-login`
+  (or `npm install -g` of it), and Rule 3.5 updates that way instead of
+  `conductor update`, which would pull the upstream release without
+  `create-app`. The installers serve `Sudakatux/conductor-skills@no-ensure-cli`.
+- `evaluations/create-app-cli-too-old.json` (step 4) and its entry in
+  `evaluations/README.md` accept the fork's `npx --yes github:…` form as the
+  update; upstream expects `conductor update` only.
+
 ## 1.8.0
 
 ### Added

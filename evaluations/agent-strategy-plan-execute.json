@@ -1,6 +1,7 @@
 {
   "name": "Research Writer That Plans, Executes Over Tools, Replans on Failure and Falls Back (Strategy.PLAN_EXECUTE)",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "I want a research-writer agent that first makes a plan (which sections, which searches), then executes it step by step with `search_web` and `write_section` tools, and replans if a step fails. The planner should read our house-style guide from the intranet (it needs a bearer token) plus a short style note. If planning falls over completely there should be a simpler fallback. Python.",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `plan_execute` row: a planner agent emits a typed plan over `tools`, executed as a durable sub-workflow and replanned on failure; requires `planner=` and a non-empty `tools=`; `fallback=` runs when planning fails; `planner_context` feeds text or fetched URLs), references/agents.md §4 (`plan_execute` needs `planner=`, optional `fallback=`; `planner_context`, `fallback_max_turns`, `credentials[]`), §8 secrets, references/optimization.md F1, F2, F3, F5 (`${CRED}` placeholders in `plannerContext` headers).",

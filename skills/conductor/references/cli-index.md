@@ -66,6 +66,7 @@ Task statuses for signaling: `COMPLETED`, `FAILED`, `FAILED_WITH_TERMINAL_ERROR`
 | Poll | `conductor task poll {taskType} --count 5` |
 | Update execution | `conductor task update-execution --workflow-id {id} --task-ref-name {ref} --status COMPLETED --output '{...}'` |
 | Queue size | `conductor task queue-size --task-type {type}` |
+| Worker `.env` from a saved profile (Orkes; ask first; never read it back: [workers.md](workers.md#worker-credentials-from-a-saved-profile-orkes)) | no CLI verb — bundled script: `python3 "$CONDUCTOR_API" --profile {profile} worker-env --out {dir}/.env` |
 
 ## Schedules
 
@@ -125,4 +126,12 @@ Requires `agentspan.skills.enabled=true` on the server (off by default). A skill
 
 ## Enterprise (Orkes only)
 
-See [orkes.md](orkes.md) for `secret` and `webhook` commands. AI provider integrations, models and access have **no CLI command** — use the fallback verbs in [orkes-integrations.md](orkes-integrations.md).
+See [orkes.md](orkes.md) for `secret` and `webhook` commands. AI provider integrations: [orkes-integrations.md](orkes-integrations.md).
+
+| Verb | CLI |
+|------|-----|
+| Create an integration (the **user** runs it: [orkes-integrations.md §2](orkes-integrations.md#2-missing-integration--the-user-creates-it)) | `conductor integration add --type anthropic [--name {name}] [--model {id}] [--set field=value] [--share-with {email}]` |
+| List integrations this profile can see | `conductor integration list [--category AI_MODEL] [--json]` |
+| Models registered / offered by the key | `conductor integration models {name}` · `conductor integration models {name} --available` |
+| Add models to an integration | `conductor integration add-model {name} --model {id}` |
+| Wait until usable, access grants | bundled script: `integration-wait`, `grant-access` |

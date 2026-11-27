@@ -18,10 +18,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$SCRIPT_VERSION = "1.8.0"
+$SCRIPT_VERSION = "2.0.0"
 # Per-file fetches and the upgrade-check both read from `main`. Releases are
 # rolled by bumping VERSION on main, not by tagging.
-$REPO_BASE = "https://raw.githubusercontent.com/conductor-oss/conductor-skills/main"
+# FORK ONLY: serve files from the fork branch (drop before upstreaming).
+$REPO_BASE = "https://raw.githubusercontent.com/Sudakatux/conductor-skills/no-ensure-cli"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -518,7 +519,9 @@ function Install-Claude {
     $marketplaceEntry = [PSCustomObject]@{
         source = [PSCustomObject]@{
             source = 'github'
-            repo   = 'conductor-oss/conductor-skills'
+            # FORK ONLY: the fork branch (drop before upstreaming).
+            repo   = 'Sudakatux/conductor-skills'
+            ref    = 'no-ensure-cli'
         }
     }
 
@@ -1050,11 +1053,10 @@ try {
     Write-Host "GET STARTED" -ForegroundColor White
     Write-Host '  Ask your agent:'
     Write-Host ""
-    Write-Host '    "Set up both my Conductor profiles: developer and localhost.'
-    Write-Host '     Use Developer Edition by default."'
+    Write-Host '    "Connect me to Conductor and list my workflows."'
     Write-Host ""
-    Write-Host "  [default] developer  https://developer.orkescloud.com/" -ForegroundColor White
-    Write-Host "  [switch]  localhost  http://localhost:8080/api" -ForegroundColor White
+    Write-Host "  Default: Developer Edition  https://developer.orkescloud.com/" -ForegroundColor White
+    Write-Host '  Say "local" for a local OSS server, or give your server''s URL.'
     Write-Host ""
 } finally {
     Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue

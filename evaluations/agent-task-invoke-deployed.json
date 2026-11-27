@@ -1,6 +1,7 @@
 {
   "name": "Invoke a Deployed Conductor Agent from a Workflow and Use Its Answer Downstream",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows"],
   "query": "I've already deployed a Conductor agent named `planner`. Add a step to my `content_pipeline` workflow that calls it with the workflow's `topic` input, then passes the planner's answer into the existing `write_draft` task.",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### AGENT`, conductor mode: fields, outputs, status mapping), references/agents.md (HITL contract / `waiting`), and examples/agent-deploy-and-invoke.md.",

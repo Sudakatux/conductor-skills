@@ -1,0 +1,24 @@
+{
+  "name": "Existing developer and localhost Profiles — Use developer and Say So",
+  "skills": [
+    "conductor"
+  ],
+  "topics": [
+    "setup",
+    "orkes"
+  ],
+  "query": "Show me my workflows. (Context: `conductor` (v0.1.10, has `create-app`) is on PATH. `conductor config list` shows two profiles, `developer` and `localhost`, created by an older version of this skill. `conductor --profile developer whoami` succeeds. No CONDUCTOR_SERVER_URL is set.)",
+  "expected_behavior": [
+    "Step 1: Server choice: several profiles exist and none is named; a `developer` profile exists and its whoami works, so use it",
+    "Step 2: Say so in one line (e.g. Using your `developer` profile; name another to switch) instead of asking which profile",
+    "Step 3: Don't run `conductor create-app`: the profile already works",
+    "Step 4: Run `conductor --profile developer workflow list --json` and present the result"
+  ],
+  "success_criteria": [
+    "Uses the `developer` profile without asking which profile to use",
+    "Tells the user which profile it used and that they can name another",
+    "Does not run `conductor create-app`, `config save`, or ask for credentials",
+    "Never reads the profile YAML files",
+    "Lists workflows with `--profile developer`"
+  ]
+}

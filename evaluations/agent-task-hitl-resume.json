@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows"],
   "query": "My deployed agent `onboarding_assistant` sometimes needs to ask the user a clarifying question mid-run. In my workflow, when that happens I want to pause, collect the answer from a human, and then continue the same agent run with their answer. How do I wire this?",
   "expected_behavior": [
     "Step 1: Consult references/workflow-definition.md (`### AGENT` — `waiting`, `pendingTool`, `executionId` resume, `prompt` required on resume), references/agents.md (HITL contract + approve-vs-resume table), and examples/agent-deploy-and-invoke.md (the `agent-hitl-resume.json` walk-through).",

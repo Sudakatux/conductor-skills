@@ -7,11 +7,12 @@ set -euo pipefail
 # https://github.com/conductor-oss/conductor-skills
 # ─────────────────────────────────────────────────────────────────────────────
 
-VERSION="1.8.0"
+VERSION="2.0.0"
 # Per-file fetches and the upgrade-check both read from `main`. Releases are
 # rolled by bumping VERSION on main, not by tagging — the install scripts ride
 # along with whatever main is serving.
-REPO_BASE="https://raw.githubusercontent.com/conductor-oss/conductor-skills/main"
+# FORK ONLY: serve files from the fork branch (drop before upstreaming).
+REPO_BASE="${CONDUCTOR_SKILLS_REPO_BASE:-https://raw.githubusercontent.com/Sudakatux/conductor-skills/no-ensure-cli}"
 
 # When set, skip the network fetch and copy from this directory instead.
 # The npm package sets this so the bundled files are used.
@@ -615,7 +616,8 @@ except json.JSONDecodeError as e:
 
 mkts = s.setdefault('extraKnownMarketplaces', {})
 mkts['conductor-skills'] = {
-    'source': {'source': 'github', 'repo': 'conductor-oss/conductor-skills'}
+    # FORK ONLY: the fork branch (drop before upstreaming).
+    'source': {'source': 'github', 'repo': 'Sudakatux/conductor-skills', 'ref': 'no-ensure-cli'}
 }
 enabled = s.setdefault('enabledPlugins', {})
 enabled['conductor@conductor-skills'] = True
@@ -1298,11 +1300,10 @@ main() {
     echo "  Ask your agent:"
   fi
   echo ""
-  echo '    "Set up both my Conductor profiles: developer and localhost.'
-  echo '     Use Developer Edition by default."'
+  echo '    "Connect me to Conductor and list my workflows."'
   echo ""
-  echo -e "  ${BOLD}[default] developer${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"
-  echo -e "  ${BOLD}[switch]  localhost${NC}  ${CYAN}http://localhost:8080/api${NC}"
+  echo -e "  ${BOLD}Default: Developer Edition${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"
+  echo "  Say \"local\" for a local OSS server, or give your server's URL."
   echo ""
 }
 

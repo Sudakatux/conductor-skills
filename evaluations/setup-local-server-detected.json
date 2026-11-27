@@ -1,0 +1,22 @@
+{
+  "name": "Local Server Running, No Profiles — OSS, No create-app",
+  "skills": [
+    "conductor"
+  ],
+  "topics": [
+    "setup",
+    "workflows",
+    "operations"
+  ],
+  "query": "What workflows do I have? (Context: `conductor` on PATH is an older CLI without `create-app`. `conductor config list` shows no profiles, CONDUCTOR_SERVER_URL is not set, and `conductor server status` reports a local server running on port 8080.)",
+  "expected_behavior": [
+    "Step 1: Server choice: nothing names a server and there are no profiles, but a local server answers, so use it (http://localhost:8080/api) instead of defaulting to Developer Edition",
+    "Step 2: A local `conductor server start` server is OSS: no auth, no `create-app`, and the older CLI is fine",
+    "Step 3: Run `conductor workflow list --json` (the CLI finds the local server) and present the result"
+  ],
+  "success_criteria": [
+    "Uses the running local server rather than Developer Edition",
+    "Does not run `conductor create-app`, does not ask for credentials, and does not require or install a newer CLI",
+    "Lists workflows with a real CLI call against the local server"
+  ]
+}

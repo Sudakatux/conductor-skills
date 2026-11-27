@@ -1,6 +1,7 @@
 {
   "name": "Observe and Debug an Agent That Sometimes Fails and Sometimes Hangs",
   "skills": ["conductor"],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "My deployed `researcher` agent sometimes fails and sometimes just sits there for an hour doing nothing. Show me how to see what it actually did on the last few runs, and how to tell a real hang from the agent just waiting on a human.",
   "expected_behavior": [
     "Step 1: Consult references/agents.md (operations: CLI/REST/UI routes; SSE event types; gotchas), references/troubleshooting.md (agent errors table), references/cli-index.md (`agent execution|status|stream|get`), and examples/agent-deploy-and-invoke.md (observe section).",

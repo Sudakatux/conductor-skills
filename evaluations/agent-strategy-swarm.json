@@ -3,6 +3,7 @@
   "skills": [
     "conductor"
   ],
+  "topics": ["agents", "workflows", "optimization"],
   "query": "Support swarm in Python: a `refund_specialist` and a `tech_support` agent that can pass the customer to each other as the conversation develops. If the customer mentions a refund, go to refunds; if the `lookup_order` tool comes back saying the item was damaged, go to tech support. Refunds must be approved by a human, and nothing may loop forever. What does the SDK give me for this?",
   "expected_behavior": [
     "Step 1: Consult references/agent-sdks.md §6 (the `swarm` row: children pass control through compiler-injected `transfer_to_<peer>` tools; declarative `handoffs=[OnTextMention(...), OnToolResult(...)]`; gotchas — never name a tool `transfer_*` or an agent `done`; `OnCondition` handoffs are workers `serve()` registers; every open-ended strategy needs `max_turns` or `termination`), references/agents.md §4/§5 (handoff conditions, termination, `approval_required`), references/optimization.md F1, F2 (refund is a side-effect tool), F3 and F10 (`swarm` without `termination` is flagged).",

@@ -1,0 +1,23 @@
+{
+  "name": "Worker on a Local OSS Server — No worker-env, No Auth Variables",
+  "skills": [
+    "conductor"
+  ],
+  "topics": [
+    "workers",
+    "workflows",
+    "setup"
+  ],
+  "query": "Write a Python worker for the `resize_image` task and get it polling. (Context: a local server started with `conductor server start` is running at http://localhost:8080; there is a saved profile `localhost` (OSS, no auth).)",
+  "expected_behavior": [
+    "Step 1: The server is a local OSS server: no auth",
+    "Step 2: Scaffold the worker; it needs only CONDUCTOR_SERVER_URL=http://localhost:8080/api",
+    "Step 3: Don't offer worker-env and don't set or ask for CONDUCTOR_AUTH_KEY / CONDUCTOR_AUTH_SECRET"
+  ],
+  "success_criteria": [
+    "Does not offer or run worker-env",
+    "Does not set, request or mention needing CONDUCTOR_AUTH_KEY / CONDUCTOR_AUTH_SECRET for this worker",
+    "Points the worker at http://localhost:8080/api via CONDUCTOR_SERVER_URL",
+    "Never reads the profile YAML"
+  ]
+}
