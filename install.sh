@@ -1300,11 +1300,10 @@ main() {
     echo "  Ask your agent:"
   fi
   echo ""
-  echo '    "Connect me to Conductor with conductor create-app.'
-  echo '     Use Developer Edition unless I give you another server URL."'
+  echo '    "Connect me to Conductor and list my workflows."'
   echo ""
-  echo -e "  ${BOLD}[default] developer${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"
-  echo -e "  ${BOLD}[switch]  localhost${NC}  ${CYAN}http://localhost:8080/api${NC}"
+  echo -e "  ${BOLD}Default: Developer Edition${NC}  ${CYAN}https://developer.orkescloud.com/${NC}"
+  echo "  Say \"local\" for a local OSS server, or give your server's URL."
   echo ""
 }
 

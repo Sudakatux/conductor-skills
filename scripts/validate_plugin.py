@@ -339,8 +339,8 @@ def check_remote_setup_contract() -> None:
             continue
         contents = installer.read_text()
         for required in (
-            "Connect me to Conductor with conductor create-app",
-            "[default] developer",
+            "Connect me to Conductor and list my workflows.",
+            "Default: Developer Edition",
         ):
             if required not in contents:
                 fail(

@@ -1053,11 +1053,10 @@ try {
     Write-Host "GET STARTED" -ForegroundColor White
     Write-Host '  Ask your agent:'
     Write-Host ""
-    Write-Host '    "Connect me to Conductor with conductor create-app.'
-    Write-Host '     Use Developer Edition unless I give you another server URL."'
+    Write-Host '    "Connect me to Conductor and list my workflows."'
     Write-Host ""
-    Write-Host "  [default] developer  https://developer.orkescloud.com/" -ForegroundColor White
-    Write-Host "  [switch]  localhost  http://localhost:8080/api" -ForegroundColor White
+    Write-Host "  Default: Developer Edition  https://developer.orkescloud.com/" -ForegroundColor White
+    Write-Host '  Say "local" for a local OSS server, or give your server''s URL.'
     Write-Host ""
 } finally {
     Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue
