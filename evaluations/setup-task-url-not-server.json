@@ -1,0 +1,24 @@
+{
+  "name": "A URL the Workflow Calls Is Not the Conductor Server — Use the Working acme Profile",
+  "skills": [
+    "conductor"
+  ],
+  "topics": [
+    "setup",
+    "workflows"
+  ],
+  "query": "Create and register a workflow `weather_alerts` that calls https://api.weather.gov/alerts/active?area=CA with an HTTP task and returns the alert headlines. (Context: `conductor` (v0.1.10) is on PATH. `conductor config list` shows exactly one profile, `acme`, and `conductor --profile acme whoami` succeeds. No CONDUCTOR_SERVER_URL is set.)",
+  "expected_behavior": [
+    "Step 1: Server choice (Rule 15): the only URL in the request is the endpoint the HTTP task calls, not a Conductor server, so choice 1 doesn't apply",
+    "Step 2: No CONDUCTOR_SERVER_URL; exactly one saved profile (`acme`) and its whoami works, so use `--profile acme`",
+    "Step 3: Write the workflow JSON with an HTTP task whose uri is https://api.weather.gov/alerts/active?area=CA",
+    "Step 4: Register it with `conductor --profile acme workflow create <file>` and run the worker gate (no SIMPLE tasks here)"
+  ],
+  "success_criteria": [
+    "Uses the `acme` profile for every server command",
+    "Never treats https://api.weather.gov as the Conductor server: no CONDUCTOR_SERVER_URL set to it, no `server-info`, `workflow list` or other probe against it, no `create-app --server` for it",
+    "Does not default to or announce Developer Edition, does not run `conductor create-app`, and does not ask which server to use",
+    "The HTTP task's uri is the weather.gov URL from the request",
+    "Never reads the profile YAML or asks for credentials"
+  ]
+}

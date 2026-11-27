@@ -26,7 +26,7 @@ The first row that matches wins.
 
 | # | Signal | Server | Profile |
 |---|---|---|---|
-| 1 | The request names a server: a URL anywhere (`connect to https://acme.orkesconductor.com`, `I'm using Orkes Conductor Developer Edition at https://developer.orkescloud.com`), or the words **Developer Edition** without a URL | that URL (Developer Edition = `https://developer.orkescloud.com`) | a profile on that server if `config list` shows one, else the host's first label (`acme`, `developer`) |
+| 1 | The request names the Conductor server to use: a URL given as the server or cluster to connect to (`connect to https://acme.orkesconductor.com`, `I'm using Orkes Conductor Developer Edition at https://developer.orkescloud.com`), or the words **Developer Edition** without a URL. URLs the workflow or its tasks should call (an HTTP task's endpoint, an API to integrate) don't count | that URL (Developer Edition = `https://developer.orkescloud.com`) | a profile on that server if `config list` shows one, else the host's first label (`acme`, `developer`) |
 | 2 | `CONDUCTOR_SERVER_URL` is set | that URL | none: the env var is the connection (check names only, Rule 5) |
 | 3 | `conductor config list` shows exactly one profile and `--profile <it> whoami` works | that profile's server | that name |
 | 4 | Several profiles | `developer` if it exists and `whoami` works; say *"Using your `developer` profile; name another to switch."* Otherwise ask which one (one question, Rule 14) | that name |

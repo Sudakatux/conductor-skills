@@ -44,6 +44,9 @@ The CLI's `create-app failed (no_launchpad)` (the server isn't Orkes Developer E
 ### setup-ci-env-vars.json, setup-legacy-profiles.json, setup-local-server-detected.json, setup-launchpad-prompt-other-profile.json
 The server order in setup.md: `CONDUCTOR_SERVER_URL` + injected credentials in an unattended CI job (no `create-app`, no questions, the old CLI is fine); the old `developer` + `localhost` profiles (use a working `developer` and say so); a running local server with no profiles (OSS, no `create-app`); and a Launch Pad prompt naming Developer Edition, which wins over a saved `acme` profile.
 
+### setup-task-url-not-server.json
+Setup choice 1 counts only a URL given as the Conductor server. A request to build an HTTP task against https://api.weather.gov, with one working `acme` profile, uses `acme`: the task's URL is never probed, set as `CONDUCTOR_SERVER_URL` or passed to `create-app`.
+
 ### local-server-setup.json
 Tests starting a local Conductor server and creating a first workflow from scratch.
 
