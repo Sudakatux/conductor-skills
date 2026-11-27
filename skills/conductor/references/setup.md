@@ -95,7 +95,11 @@ only after that line: if your host can run the command in the background and
 read its output (Claude Code: run in background), do that and tell the user once
 the `Opening ` line appears. Otherwise say beforehand, conditionally: *"If a
 browser window opens, sign in and click **Approve**."* Never say it as if the
-browser had already opened.
+browser had already opened. If the CLI prints `If your browser didn't open,
+visit:` (it couldn't open one) or `Open this link in a browser on this
+computer:` (`--no-browser`) instead, followed by a URL, relay that URL with the
+instruction: *"Open <url> in a browser on this computer, sign in and click
+**Approve**."*
 
 The Launch Pad finds or creates the application (roles `METADATA_MANAGER` +
 `WORKER`) and hands a new key to the CLI, which checks it at `/token` before
