@@ -53,7 +53,7 @@ probe for those. Otherwise:
 export CONDUCTOR_API="<path-to-this-skill>/scripts/conductor_api.py"
 CONDUCTOR_SERVER_URL="https://acme.example.com/api" python3 "$CONDUCTOR_API" server-info   # no credentials sent; prints flavor
 python3 "$CONDUCTOR_API" --profile acme server-info                                     # a saved profile's server
-# or an unauthenticated workflow list: 200 = OSS, 401/403 = Orkes
+# no Python? an unauthenticated `conductor workflow list` (200 = OSS, 401/403 = Orkes), only with no CONDUCTOR_AUTH_* set and no profile
 ```
 
 ### 4. Connect: OSS
@@ -221,7 +221,7 @@ again when the user named a URL.
 
 ```bash
 export CONDUCTOR_SERVER_URL="https://pg-qa.orkesconductor.com/api"
-conductor workflow list        # 200 without credentials = OSS; 401/403 = Enterprise (Rule 17). Skip if the user says it needs auth
+python3 "$CONDUCTOR_API" server-info   # no credentials sent, even with CONDUCTOR_AUTH_* set; prints flavor (Rule 17). Skip if the user says it needs auth
 export CONDUCTOR_SERVER_TYPE="Enterprise"   # Orkes
 ```
 
